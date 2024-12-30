@@ -32,6 +32,37 @@ export function AudioUploader() {
           description: "Call processed and saved successfully!",
         });
       }
+    } else if (action === "task" && processedCallData) {
+      try {
+        // First save the call data
+        const { error: dbError } = await supabase
+          .from('calls')
+          .insert(processedCallData);
+
+        if (dbError) throw dbError;
+
+        // Then generate tasks from the transcription
+        const { data: tasksData, error: tasksError } = await supabase.functions
+          .invoke('analyze-tasks', {
+            body: { transcription: processedCallData.transcription },
+          });
+
+        if (tasksError) throw tasksError;
+
+        // For now, just show the generated tasks in a toast
+        // Later we'll implement proper task storage and display
+        toast({
+          title: "Tasks Generated",
+          description: `${tasksData.tasks.length} tasks have been created from this call.`,
+        });
+      } catch (error) {
+        console.error("Error processing tasks:", error);
+        toast({
+          title: "Error",
+          description: "Failed to generate tasks. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
     // Reset state
     setShowActionDialog(false);

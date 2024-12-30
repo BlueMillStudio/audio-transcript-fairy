@@ -49,8 +49,8 @@ export function CallActionDialog({
               <div className="p-2 rounded-full bg-blue-100">
                 <ListTodo className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="font-medium">Create Task</h3>
-              <p className="text-sm text-gray-500">Coming soon</p>
+              <h3 className="font-medium">Create Tasks</h3>
+              <p className="text-sm text-gray-500">Generate tasks from call</p>
             </div>
           </Card>
         </div>
