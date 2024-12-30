@@ -3,11 +3,40 @@ import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { CallActionDialog } from "./CallActionDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 export function AudioUploader() {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const [showActionDialog, setShowActionDialog] = useState(false);
+  const [processedCallData, setProcessedCallData] = useState<any>(null);
+
+  const handleCallAction = async (action: "nothing" | "task") => {
+    if (action === "nothing" && processedCallData) {
+      // Store the call data as we normally would
+      const { error: dbError } = await supabase
+        .from('calls')
+        .insert(processedCallData);
+
+      if (dbError) {
+        console.error("Database error:", dbError);
+        toast({
+          title: "Error",
+          description: "Failed to save call data. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Call processed and saved successfully!",
+        });
+      }
+    }
+    // Reset state
+    setShowActionDialog(false);
+    setProcessedCallData(null);
+  };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -73,29 +102,22 @@ export function AudioUploader() {
 
       if (analysisError) throw analysisError;
       
-      // Store all data in Supabase
-      const { error: dbError } = await supabase
-        .from('calls')
-        .insert({
-          transcription: transcriptionData.text,
-          audio_url: publicUrl,
-          call_type: transcriptionData.call_type,
-          operator_name: transcriptionData.operator_name,
-          client_name: transcriptionData.client_name,
-          company_name: transcriptionData.company_name,
-          duration: transcriptionData.duration,
-          summary: analysisData.summary,
-          key_points: analysisData.keyPoints,
-          prospect_type: analysisData.prospectType,
-          next_action: analysisData.nextAction,
-        } satisfies Database['public']['Tables']['calls']['Insert']);
+      // Instead of immediately storing, prepare the data and show dialog
+      setProcessedCallData({
+        transcription: transcriptionData.text,
+        audio_url: publicUrl,
+        call_type: transcriptionData.call_type,
+        operator_name: transcriptionData.operator_name,
+        client_name: transcriptionData.client_name,
+        company_name: transcriptionData.company_name,
+        duration: transcriptionData.duration,
+        summary: analysisData.summary,
+        key_points: analysisData.keyPoints,
+        prospect_type: analysisData.prospectType,
+        next_action: analysisData.nextAction,
+      } satisfies Database['public']['Tables']['calls']['Insert']);
 
-      if (dbError) throw dbError;
-      
-      toast({
-        title: "Success",
-        description: "Audio processed and analyzed successfully!",
-      });
+      setShowActionDialog(true);
     } catch (error) {
       console.error("Processing error:", error);
       toast({
@@ -109,21 +131,28 @@ export function AudioUploader() {
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <Button
-        disabled={isUploading}
-        onClick={() => document.getElementById("audio-input")?.click()}
-      >
-        <Upload className="mr-2 h-4 w-4" />
-        Upload Audio
-      </Button>
-      <input
-        id="audio-input"
-        type="file"
-        accept="audio/*"
-        className="hidden"
-        onChange={handleFileChange}
+    <>
+      <div className="flex items-center gap-4">
+        <Button
+          disabled={isUploading}
+          onClick={() => document.getElementById("audio-input")?.click()}
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Upload Audio
+        </Button>
+        <input
+          id="audio-input"
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+      <CallActionDialog
+        open={showActionDialog}
+        onOpenChange={setShowActionDialog}
+        onAction={handleCallAction}
       />
-    </div>
+    </>
   );
 }
