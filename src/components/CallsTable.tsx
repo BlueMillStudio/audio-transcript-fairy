@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -6,36 +7,48 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-type Call = {
-  id: string;
-  operatorName: string;
-  clientName: string;
-  companyName: string;
-  duration: string;
-  type: "inbound" | "outbound";
-};
-
-const mockCalls: Call[] = [
-  {
-    id: "1",
-    operatorName: "John Doe",
-    clientName: "Alice Smith",
-    companyName: "Tech Corp",
-    duration: "5:23",
-    type: "inbound",
-  },
-  {
-    id: "2",
-    operatorName: "Jane Smith",
-    clientName: "Bob Johnson",
-    companyName: "Acme Inc",
-    duration: "3:45",
-    type: "outbound",
-  },
-];
+type Call = Database['public']['Tables']['calls']['Row'];
 
 export function CallsTable() {
+  const [calls, setCalls] = useState<Call[]>([]);
+
+  useEffect(() => {
+    // Fetch initial data
+    const fetchCalls = async () => {
+      const { data } = await supabase
+        .from('calls')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (data) setCalls(data);
+    };
+
+    fetchCalls();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('calls-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'calls'
+        },
+        (payload) => {
+          setCalls(current => [payload.new as Call, ...current]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -49,21 +62,21 @@ export function CallsTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockCalls.map((call) => (
+          {calls.map((call) => (
             <TableRow key={call.id}>
-              <TableCell>{call.operatorName}</TableCell>
-              <TableCell>{call.clientName}</TableCell>
-              <TableCell>{call.companyName}</TableCell>
-              <TableCell>{call.duration}</TableCell>
+              <TableCell>{call.operator_name}</TableCell>
+              <TableCell>{call.client_name}</TableCell>
+              <TableCell>{call.company_name}</TableCell>
+              <TableCell>{call.duration}s</TableCell>
               <TableCell>
                 <span
                   className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                    call.type === "inbound"
+                    call.call_type === "inbound"
                       ? "bg-green-100 text-green-700"
                       : "bg-blue-100 text-blue-700"
                   }`}
                 >
-                  {call.type}
+                  {call.call_type}
                 </span>
               </TableCell>
             </TableRow>

@@ -19,41 +19,87 @@ serve(async (req) => {
       throw new Error('No audio file provided')
     }
 
-    console.log('Preparing to call Groq API...')
+    console.log('Preparing to call Groq API for transcription...')
 
-    const groqFormData = new FormData()
-    groqFormData.append('file', audioFile)
-    groqFormData.append('model', 'whisper-large-v3-turbo')
-    groqFormData.append('response_format', 'json')
+    // First, get the transcription
+    const transcriptionFormData = new FormData()
+    transcriptionFormData.append('file', audioFile)
+    transcriptionFormData.append('model', 'whisper-large-v3-turbo')
+    transcriptionFormData.append('response_format', 'json')
 
     const groqApiKey = Deno.env.get('GROQ_API_KEY')
     if (!groqApiKey) {
       throw new Error('GROQ_API_KEY is not set in environment variables')
     }
 
-    console.log('Calling Groq API...')
-    const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+    console.log('Calling Groq API for transcription...')
+    const transcriptionResponse = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${groqApiKey}`,
       },
-      body: groqFormData,
+      body: transcriptionFormData,
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Groq API error:', errorText)
-      throw new Error(`Groq API error: ${errorText}`)
+    if (!transcriptionResponse.ok) {
+      const errorText = await transcriptionResponse.text()
+      console.error('Groq API transcription error:', errorText)
+      throw new Error(`Groq API transcription error: ${errorText}`)
     }
 
-    const data = await response.json()
-    console.log('Successfully received transcription from Groq')
+    const transcriptionData = await transcriptionResponse.json()
+    const transcription = transcriptionData.text
+
+    console.log('Successfully received transcription, now analyzing with LLaMA...')
+
+    // Now, analyze the transcription with LLaMA
+    const analysisResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${groqApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that extracts information from call transcripts. Extract the operator name, client name, company name, and determine if it's an inbound or outbound call. Return the information in JSON format with these exact keys: operator_name, client_name, company_name, call_type (which should be either 'inbound' or 'outbound')"
+          },
+          {
+            role: "user",
+            content: transcription
+          }
+        ],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
+      }),
+    })
+
+    if (!analysisResponse.ok) {
+      const errorText = await analysisResponse.text()
+      console.error('Groq API analysis error:', errorText)
+      throw new Error(`Groq API analysis error: ${errorText}`)
+    }
+
+    const analysisData = await analysisResponse.json()
+    const extractedInfo = JSON.parse(analysisData.choices[0].message.content)
     
-    return new Response(JSON.stringify(data), {
+    // Calculate audio duration in seconds
+    const audioDuration = Math.round(audioFile.size / (16000 * 2)) // Approximate duration based on file size
+
+    // Combine all the information
+    const result = {
+      text: transcription,
+      ...extractedInfo,
+      duration: audioDuration
+    }
+    
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('Transcription error:', error)
+    console.error('Error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
