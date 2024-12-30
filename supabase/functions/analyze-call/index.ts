@@ -8,7 +8,7 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -18,11 +18,6 @@ serve(async (req) => {
     if (!groqApiKey) {
       throw new Error('GROQ_API_KEY is not set')
     }
-
-    // Convert the formatted transcript array to a string if it's not already
-    const transcriptionText = Array.isArray(transcription) 
-      ? transcription.map(t => `${t.speaker}: ${t.text}`).join('\n')
-      : transcription;
 
     console.log('Analyzing call with LLaMA...')
     const analysisResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -40,7 +35,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: transcriptionText
+            content: transcription
           }
         ],
         temperature: 0.1,

@@ -117,25 +117,17 @@ export function AudioUploader() {
 
       if (transcriptionError) throw transcriptionError;
 
-      // Step 2: Format the transcription with speaker labels
-      const { data: formattedData, error: formatError } = await supabase.functions
-        .invoke('format-transcript', {
-          body: { transcription: transcriptionData.text },
-        });
-
-      if (formatError) throw formatError;
-
-      // Step 3: Call Edge Function for analysis
+      // Step 2: Call Edge Function for analysis
       const { data: analysisData, error: analysisError } = await supabase.functions
         .invoke('analyze-call', {
-          body: { transcription: formattedData.formatted_transcript },
+          body: { transcription: transcriptionData.text },
         });
 
       if (analysisError) throw analysisError;
       
       // Instead of immediately storing, prepare the data and show dialog
       setProcessedCallData({
-        transcription: formattedData.formatted_transcript,
+        transcription: transcriptionData.text,
         audio_url: publicUrl,
         call_type: transcriptionData.call_type,
         operator_name: transcriptionData.operator_name,
