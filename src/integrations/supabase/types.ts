@@ -18,7 +18,11 @@ export type Database = {
           created_at: string
           duration: number | null
           id: string
+          key_points: string[] | null
+          next_action: string | null
           operator_name: string | null
+          prospect_type: string | null
+          summary: string | null
           transcription: string | null
           updated_at: string
         }
@@ -30,7 +34,11 @@ export type Database = {
           created_at?: string
           duration?: number | null
           id?: string
+          key_points?: string[] | null
+          next_action?: string | null
           operator_name?: string | null
+          prospect_type?: string | null
+          summary?: string | null
           transcription?: string | null
           updated_at?: string
         }
@@ -42,7 +50,11 @@ export type Database = {
           created_at?: string
           duration?: number | null
           id?: string
+          key_points?: string[] | null
+          next_action?: string | null
           operator_name?: string | null
+          prospect_type?: string | null
+          summary?: string | null
           transcription?: string | null
           updated_at?: string
         }

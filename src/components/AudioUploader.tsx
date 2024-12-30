@@ -54,28 +54,40 @@ export function AudioUploader() {
         .from("audio")
         .getPublicUrl(fileName);
 
-      // Call Edge Function for transcription and analysis
+      // Step 1: Call Edge Function for transcription
       const formData = new FormData();
       formData.append("file", file);
 
-      const { data: functionData, error: functionError } = await supabase.functions
+      const { data: transcriptionData, error: transcriptionError } = await supabase.functions
         .invoke('transcribe', {
           body: formData,
         });
 
-      if (functionError) throw functionError;
+      if (transcriptionError) throw transcriptionError;
+
+      // Step 2: Call Edge Function for analysis
+      const { data: analysisData, error: analysisError } = await supabase.functions
+        .invoke('analyze-call', {
+          body: { transcription: transcriptionData.text },
+        });
+
+      if (analysisError) throw analysisError;
       
-      // Store call data in Supabase
+      // Store all data in Supabase
       const { error: dbError } = await supabase
         .from('calls')
         .insert({
-          transcription: functionData.text,
+          transcription: transcriptionData.text,
           audio_url: publicUrl,
-          call_type: functionData.call_type,
-          operator_name: functionData.operator_name,
-          client_name: functionData.client_name,
-          company_name: functionData.company_name,
-          duration: functionData.duration,
+          call_type: transcriptionData.call_type,
+          operator_name: transcriptionData.operator_name,
+          client_name: transcriptionData.client_name,
+          company_name: transcriptionData.company_name,
+          duration: transcriptionData.duration,
+          summary: analysisData.summary,
+          key_points: analysisData.keyPoints,
+          prospect_type: analysisData.prospectType,
+          next_action: analysisData.nextAction,
         } satisfies Database['public']['Tables']['calls']['Insert']);
 
       if (dbError) throw dbError;
