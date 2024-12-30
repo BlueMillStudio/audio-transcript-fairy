@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -14,6 +15,7 @@ type Call = Database['public']['Tables']['calls']['Row'];
 
 export function CallsTable() {
   const [calls, setCalls] = useState<Call[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch initial data
@@ -63,7 +65,11 @@ export function CallsTable() {
         </TableHeader>
         <TableBody>
           {calls.map((call) => (
-            <TableRow key={call.id}>
+            <TableRow 
+              key={call.id}
+              className="cursor-pointer hover:bg-gray-50"
+              onClick={() => navigate(`/call/${call.id}`)}
+            >
               <TableCell>{call.operator_name}</TableCell>
               <TableCell>{call.client_name}</TableCell>
               <TableCell>{call.company_name}</TableCell>

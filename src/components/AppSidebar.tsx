@@ -1,5 +1,5 @@
-import { LayoutDashboard, Users, CheckSquare, Menu } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { LayoutDashboard, Users, CheckSquare, Menu, Phone } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -10,9 +10,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const navItems = [
+const mainNavItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
@@ -31,6 +34,25 @@ const navItems = [
 ];
 
 export function AppSidebar() {
+  const location = useLocation();
+  const currentCallId = location.pathname.startsWith('/call/') 
+    ? location.pathname.split('/')[2] 
+    : null;
+
+  const { data: activeCall } = useQuery({
+    queryKey: ["call", currentCallId],
+    queryFn: async () => {
+      if (!currentCallId) return null;
+      const { data } = await supabase
+        .from("calls")
+        .select("*")
+        .eq("id", currentCallId)
+        .single();
+      return data;
+    },
+    enabled: !!currentCallId,
+  });
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -45,7 +67,7 @@ export function AppSidebar() {
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -67,6 +89,33 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {activeCall && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+              <SidebarGroupLabel>Active Call</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={`/call/${activeCall.id}`}
+                        className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors bg-primary text-primary-foreground"
+                      >
+                        <Phone className="h-5 w-5" />
+                        <div className="flex flex-col">
+                          <span className="text-sm">{activeCall.client_name}</span>
+                          <span className="text-xs opacity-75">{activeCall.company_name}</span>
+                        </div>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
     </Sidebar>
   );
