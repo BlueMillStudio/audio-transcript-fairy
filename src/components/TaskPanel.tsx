@@ -17,9 +17,10 @@ interface TaskPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   callId?: string;
+  taskId?: string;
 }
 
-export function TaskPanel({ open, onOpenChange, callId }: TaskPanelProps) {
+export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
@@ -28,6 +29,8 @@ export function TaskPanel({ open, onOpenChange, callId }: TaskPanelProps) {
       
       if (callId) {
         query = query.eq('call_id', callId);
+      } else if (taskId) {
+        query = query.eq('id', taskId);
       }
       
       const { data } = await query.order('created_at', { ascending: false });
@@ -69,7 +72,7 @@ export function TaskPanel({ open, onOpenChange, callId }: TaskPanelProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, callId]);
+  }, [open, callId, taskId]);
 
   const getPriorityColor = (priority: string | null) => {
     switch (priority) {
