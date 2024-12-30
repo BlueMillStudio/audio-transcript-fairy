@@ -2,12 +2,21 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MessageSquare, Phone, Building2, User } from "lucide-react";
+import { MessageSquare, Phone, Building2, User, AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+
+type CallAnalysis = {
+  prospectType: 'Good Prospect' | 'Uncertain Prospect' | 'Bad Prospect';
+  summary: string;
+  keyPoints: string[];
+  nextAction: string;
+};
 
 const CallDetails = () => {
   const { id } = useParams();
+  const [analysis, setAnalysis] = useState<CallAnalysis | null>(null);
 
-  const { data: call } = useQuery({
+  const { data: call, isLoading } = useQuery({
     queryKey: ["call", id],
     queryFn: async () => {
       const { data } = await supabase
@@ -18,6 +27,25 @@ const CallDetails = () => {
       return data;
     },
   });
+
+  useEffect(() => {
+    const analyzeCall = async () => {
+      if (call?.transcription) {
+        try {
+          const { data } = await supabase.functions.invoke('analyze-call', {
+            body: { transcription: call.transcription }
+          });
+          setAnalysis(data);
+        } catch (error) {
+          console.error('Error analyzing call:', error);
+        }
+      }
+    };
+
+    if (call) {
+      analyzeCall();
+    }
+  }, [call]);
 
   if (!call) return null;
 
@@ -60,14 +88,44 @@ const CallDetails = () => {
                   </div>
                 </div>
               </div>
+              {analysis && (
+                <div className="flex items-center gap-2 mt-4 p-4 rounded-lg bg-gray-50">
+                  <AlertCircle className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm text-gray-500">Prospect Status</p>
+                    <p className="font-medium">{analysis.prospectType}</p>
+                    <p className="text-sm text-gray-600 mt-1">{analysis.nextAction}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {analysis && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Call Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700">{analysis.summary}</p>
+                
+                <div className="mt-6">
+                  <h3 className="font-semibold text-lg mb-3">Key Points</h3>
+                  <ul className="list-disc pl-5 space-y-2">
+                    {analysis.keyPoints.map((point, index) => (
+                      <li key={index} className="text-gray-700">{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
-                Transcription
+                Full Transcription
               </CardTitle>
             </CardHeader>
             <CardContent>

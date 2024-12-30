@@ -8,6 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -61,15 +63,12 @@ export function CallsTable() {
             <TableHead>Company</TableHead>
             <TableHead>Duration</TableHead>
             <TableHead>Type</TableHead>
+            <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {calls.map((call) => (
-            <TableRow 
-              key={call.id}
-              className="cursor-pointer hover:bg-gray-50"
-              onClick={() => navigate(`/call/${call.id}`)}
-            >
+            <TableRow key={call.id}>
               <TableCell>{call.operator_name}</TableCell>
               <TableCell>{call.client_name}</TableCell>
               <TableCell>{call.company_name}</TableCell>
@@ -84,6 +83,17 @@ export function CallsTable() {
                 >
                   {call.call_type}
                 </span>
+              </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/call/${call.id}`)}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  View
+                </Button>
               </TableCell>
             </TableRow>
           ))}

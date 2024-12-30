@@ -94,19 +94,19 @@ export function AppSidebar() {
           <>
             <SidebarSeparator />
             <SidebarGroup>
-              <SidebarGroupLabel>Active Call</SidebarGroupLabel>
+              <SidebarGroupLabel className="px-4 py-2">Recent Calls</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={`/call/${activeCall.id}`}
-                        className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors bg-primary text-primary-foreground"
+                        className="flex items-center gap-3 px-4 py-3 rounded-md transition-colors bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Phone className="h-5 w-5" />
                         <div className="flex flex-col">
-                          <span className="text-sm">{activeCall.client_name}</span>
-                          <span className="text-xs opacity-75">{activeCall.company_name}</span>
+                          <span className="font-medium">{activeCall.client_name}</span>
+                          <span className="text-sm opacity-75">{activeCall.company_name}</span>
                         </div>
                       </NavLink>
                     </SidebarMenuButton>
