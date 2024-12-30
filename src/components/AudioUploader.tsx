@@ -66,25 +66,18 @@ export function AudioUploader() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: formData,
-      });
+      const { data: functionData, error: functionError } = await supabase.functions
+        .invoke('transcribe', {
+          body: formData,
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to transcribe audio");
-      }
-
-      const data = await response.json();
+      if (functionError) throw functionError;
       
       // Store transcription in Supabase
       const { error: dbError } = await supabase
         .from('calls')
         .insert({
-          transcription: data.text,
+          transcription: functionData.text,
           audio_url: publicUrl,
           call_type: "inbound" as const,
           operator_name: "Unknown",
@@ -95,7 +88,7 @@ export function AudioUploader() {
 
       if (dbError) throw dbError;
 
-      setTranscription(data.text);
+      setTranscription(functionData.text);
       setShowTranscription(true);
       
       toast({
