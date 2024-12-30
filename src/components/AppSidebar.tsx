@@ -1,38 +1,16 @@
-import { LayoutDashboard, Users, CheckSquare, Menu, Phone, ListTodo } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
   SidebarSeparator,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-
-const mainNavItems = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/",
-  },
-  {
-    title: "Clients",
-    icon: Users,
-    path: "/clients",
-  },
-  {
-    title: "Tasks",
-    icon: CheckSquare,
-    path: "/tasks",
-  },
-];
+import { MainNavigation } from "./sidebar/MainNavigation";
+import { RecentItems } from "./sidebar/RecentItems";
 
 type RecentItem = {
   id: string;
@@ -122,78 +100,16 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarGroup>
-          <div className="flex items-center justify-between px-4 py-2">
-            <SidebarGroupLabel className="text-lg font-bold">
-              Call Transcriber
-            </SidebarGroupLabel>
-            <SidebarTrigger>
-              <Menu className="h-6 w-6" />
-            </SidebarTrigger>
-          </div>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-                          isActive
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-accent/10"
-                        }`
-                      }
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
+        <div className="flex items-center justify-between px-4 py-2">
+          <SidebarTrigger>
+            <Menu className="h-6 w-6" />
+          </SidebarTrigger>
+        </div>
+        <MainNavigation />
         {recentItems.length > 0 && (
           <>
             <SidebarSeparator />
-            <SidebarGroup>
-              <SidebarGroupLabel className="px-4 py-2">Recent Items</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {recentItems.map((item) => (
-                    <SidebarMenuItem key={`${item.type}-${item.id}`}>
-                      <SidebarMenuButton asChild>
-                        <NavLink
-                          to={item.type === 'call' ? `/call/${item.id}` : `/tasks?id=${item.id}`}
-                          className={({ isActive }) =>
-                            `flex items-center gap-3 px-4 py-3 rounded-md transition-colors ${
-                              isActive
-                                ? "bg-primary text-primary-foreground"
-                                : "hover:bg-accent/10"
-                            }`
-                          }
-                        >
-                          {item.type === 'call' ? (
-                            <Phone className="h-5 w-5" />
-                          ) : (
-                            <ListTodo className="h-5 w-5" />
-                          )}
-                          <div className="flex flex-col">
-                            <span className="font-medium">{item.title}</span>
-                            {item.subtitle && (
-                              <span className="text-sm opacity-75">{item.subtitle}</span>
-                            )}
-                          </div>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            <RecentItems items={recentItems} />
           </>
         )}
       </SidebarContent>
