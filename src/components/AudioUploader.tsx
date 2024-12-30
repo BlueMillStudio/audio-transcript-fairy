@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 export function AudioUploader() {
   const { toast } = useToast();
@@ -83,16 +84,16 @@ export function AudioUploader() {
       
       // Store transcription in Supabase
       const { error: dbError } = await supabase
-        .from("calls")
+        .from('calls')
         .insert({
           transcription: data.text,
           audio_url: publicUrl,
-          call_type: "inbound", // Default value for now
-          operator_name: "Unknown", // Default value for now
-          client_name: "Unknown", // Default value for now
-          company_name: "Unknown", // Default value for now
-          duration: 0, // We'll need to calculate this later
-        });
+          call_type: "inbound" as const,
+          operator_name: "Unknown",
+          client_name: "Unknown",
+          company_name: "Unknown",
+          duration: 0,
+        } satisfies Database['public']['Tables']['calls']['Insert']);
 
       if (dbError) throw dbError;
 
