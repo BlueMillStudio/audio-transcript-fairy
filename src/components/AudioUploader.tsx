@@ -62,16 +62,14 @@ export function AudioUploader() {
         .from("audio")
         .getPublicUrl(fileName);
 
-      // Call Groq API for transcription
+      // Call Edge Function for transcription
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("model", "whisper-large-v3-turbo");
-      formData.append("response_format", "json");
 
-      const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: formData,
       });
