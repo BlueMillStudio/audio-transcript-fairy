@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TaskPanel } from "@/components/TaskPanel";
+import { CallDetailsPanel } from "@/components/CallDetailsPanel";
 import { useState } from "react";
 import {
   Table,
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -21,6 +22,8 @@ type Task = Database['public']['Tables']['tasks']['Row'];
 const Tasks = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string>();
   const [isTaskPanelOpen, setIsTaskPanelOpen] = useState(false);
+  const [selectedCallId, setSelectedCallId] = useState<string>();
+  const [isCallPanelOpen, setIsCallPanelOpen] = useState(false);
 
   const { data: tasks } = useQuery({
     queryKey: ["tasks"],
@@ -80,9 +83,23 @@ const Tasks = () => {
                 <TableCell>{task.title}</TableCell>
                 <TableCell>
                   {task.calls && (
-                    <div>
-                      <div className="font-medium">{task.calls.client_name}</div>
-                      <div className="text-sm text-gray-500">{task.calls.company_name}</div>
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <div className="font-medium">{task.calls.client_name}</div>
+                        <div className="text-sm text-muted-foreground">{task.calls.company_name}</div>
+                      </div>
+                      {task.call_id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedCallId(task.call_id);
+                            setIsCallPanelOpen(true);
+                          }}
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   )}
                 </TableCell>
@@ -122,6 +139,11 @@ const Tasks = () => {
         open={isTaskPanelOpen}
         onOpenChange={setIsTaskPanelOpen}
         taskId={selectedTaskId}
+      />
+      <CallDetailsPanel
+        open={isCallPanelOpen}
+        onOpenChange={setIsCallPanelOpen}
+        callId={selectedCallId}
       />
     </div>
   );
