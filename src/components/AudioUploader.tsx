@@ -2,12 +2,20 @@ import { useState } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 export function AudioUploader() {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const [transcription, setTranscription] = useState<string | null>(null);
+  const [showTranscription, setShowTranscription] = useState(false);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,7 +45,7 @@ export function AudioUploader() {
     setIsUploading(true);
     toast({
       title: "Processing audio",
-      description: "Your file is being transcribed and analyzed...",
+      description: "Your file is being transcribed...",
     });
 
     try {
@@ -54,15 +62,7 @@ export function AudioUploader() {
         .from("audio")
         .getPublicUrl(fileName);
 
-      // Get audio duration
-      const audio = new Audio();
-      audio.src = URL.createObjectURL(file);
-      await new Promise((resolve) => {
-        audio.addEventListener('loadedmetadata', resolve);
-      });
-      const duration = Math.round(audio.duration);
-
-      // Call Edge Function for transcription and analysis
+      // Call Edge Function for transcription
       const formData = new FormData();
       formData.append("file", file);
 
@@ -73,30 +73,33 @@ export function AudioUploader() {
 
       if (functionError) throw functionError;
       
-      // Store call data in Supabase
+      // Store transcription in Supabase
       const { error: dbError } = await supabase
         .from('calls')
         .insert({
           transcription: functionData.text,
           audio_url: publicUrl,
-          call_type: functionData.analysis.call_type || "unknown",
-          operator_name: functionData.analysis.operator_name || "Unknown",
-          client_name: functionData.analysis.client_name || "Unknown",
-          company_name: functionData.analysis.company_name || "Unknown",
-          duration,
+          call_type: "inbound" as const,
+          operator_name: "Unknown",
+          client_name: "Unknown",
+          company_name: "Unknown",
+          duration: 0,
         } satisfies Database['public']['Tables']['calls']['Insert']);
 
       if (dbError) throw dbError;
+
+      setTranscription(functionData.text);
+      setShowTranscription(true);
       
       toast({
         title: "Success",
-        description: "Audio processed and analyzed successfully!",
+        description: "Audio transcribed successfully!",
       });
     } catch (error) {
-      console.error("Processing error:", error);
+      console.error("Transcription error:", error);
       toast({
         title: "Error",
-        description: "Failed to process audio. Please try again.",
+        description: "Failed to transcribe audio. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -105,21 +108,36 @@ export function AudioUploader() {
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <Button
-        disabled={isUploading}
-        onClick={() => document.getElementById("audio-input")?.click()}
-      >
-        <Upload className="mr-2 h-4 w-4" />
-        Upload Audio
-      </Button>
-      <input
-        id="audio-input"
-        type="file"
-        accept="audio/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-    </div>
+    <>
+      <div className="flex items-center gap-4">
+        <Button
+          disabled={isUploading}
+          onClick={() => document.getElementById("audio-input")?.click()}
+        >
+          <Upload className="mr-2 h-4 w-4" />
+          Upload Audio
+        </Button>
+        <input
+          id="audio-input"
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      <Dialog open={showTranscription} onOpenChange={setShowTranscription}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>Transcription Result</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 max-h-[400px] overflow-y-auto">
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {transcription}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
