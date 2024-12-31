@@ -4,6 +4,8 @@ import { ContactsTable } from "@/components/contacts/ContactsTable";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { mapDatabaseLeadToLead } from "@/types/campaign";
+import type { DatabaseLead } from "@/types/database";
 
 const Contacts = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,7 +25,9 @@ const Contacts = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      
+      // Map the database leads to the Lead type
+      return (data as DatabaseLead[]).map(mapDatabaseLeadToLead);
     },
   });
 
