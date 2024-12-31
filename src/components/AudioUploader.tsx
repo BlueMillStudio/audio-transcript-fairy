@@ -8,10 +8,9 @@ import type { Task } from "@/types/task";
 
 interface AudioUploaderProps {
   onProcessingComplete?: () => void;
-  leadId?: string;
 }
 
-export function AudioUploader({ onProcessingComplete, leadId }: AudioUploaderProps) {
+export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
   const { toast } = useToast();
   const {
     isUploading,
@@ -20,36 +19,6 @@ export function AudioUploader({ onProcessingComplete, leadId }: AudioUploaderPro
     processedCallData,
     processAudioFile,
   } = useAudioProcessing();
-
-  const updateLeadStatus = async (prospectType: string) => {
-    if (!leadId) return;
-
-    let status = 'not_contacted';
-    if (prospectType === 'Good Prospect') {
-      status = 'interested';
-    } else if (prospectType === 'Bad Prospect') {
-      status = 'not_interested';
-    } else {
-      status = 'follow_up';
-    }
-
-    const { error } = await supabase
-      .from('leads')
-      .update({ 
-        status,
-        last_contacted: new Date().toISOString()
-      })
-      .eq('id', leadId);
-
-    if (error) {
-      console.error('Error updating lead status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update lead status.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleCallAction = async (action: "nothing" | "task") => {
     if (!processedCallData) return;
@@ -63,9 +32,6 @@ export function AudioUploader({ onProcessingComplete, leadId }: AudioUploaderPro
         .single();
 
       if (dbError) throw dbError;
-
-      // Update lead status based on prospect type
-      await updateLeadStatus(processedCallData.prospect_type);
 
       if (action === "task") {
         // Generate tasks from the transcription
