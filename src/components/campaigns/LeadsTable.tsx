@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Phone, Calendar, CheckSquare, MoreVertical } from "lucide-react";
+import { Phone, Calendar, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -117,15 +117,6 @@ export const LeadsTable = ({
                   >
                     <Calendar className="h-4 w-4" />
                     Schedule
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onMarkCompleted(lead.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <CheckSquare className="h-4 w-4" />
-                    Complete
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
