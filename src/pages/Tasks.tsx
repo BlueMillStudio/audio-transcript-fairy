@@ -21,28 +21,19 @@ const Tasks = () => {
 
   const handleArchiveTask = async (taskId: string) => {
     try {
-      const { data: task } = await supabase
+      const { error } = await supabase
         .from("tasks")
-        .select("*")
-        .eq("id", taskId)
-        .single();
+        .update({ active_status: "archived" })
+        .eq("id", taskId);
 
-      if (task) {
-        // Update the task status to 'archived'
-        const { error: updateError } = await supabase
-          .from("tasks")
-          .update({ status: "archived" })
-          .eq("id", taskId);
+      if (error) throw error;
 
-        if (updateError) throw updateError;
-
-        toast({
-          title: "Task archived",
-          description: "The task has been archived successfully.",
-        });
-        
-        refetch();
-      }
+      toast({
+        title: "Task archived",
+        description: "The task has been archived successfully.",
+      });
+      
+      refetch();
     } catch (error) {
       console.error("Error archiving task:", error);
       toast({
@@ -53,6 +44,12 @@ const Tasks = () => {
     }
   };
 
+  const handleClearFilter = (filterType: string) => {
+    const newFilters = { ...filters };
+    delete newFilters[filterType];
+    setFilters(newFilters);
+  };
+
   return (
     <div className="p-8">
       <TasksHeader
@@ -60,6 +57,7 @@ const Tasks = () => {
         setShowArchived={setShowArchived}
         filters={filters}
         setFilters={setFilters}
+        onClearFilter={handleClearFilter}
       />
       <TasksTable
         tasks={tasks || []}

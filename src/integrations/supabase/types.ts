@@ -122,6 +122,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          active_status: string
           assignee: string | null
           call_id: string | null
           created_at: string
@@ -134,6 +135,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_status?: string
           assignee?: string | null
           call_id?: string | null
           created_at?: string
@@ -146,6 +148,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_status?: string
           assignee?: string | null
           call_id?: string | null
           created_at?: string
