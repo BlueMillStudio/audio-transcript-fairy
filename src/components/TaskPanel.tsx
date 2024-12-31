@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { TaskReviewItem } from "./TaskReviewItem";
+import { useToast } from "@/hooks/use-toast";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
@@ -21,6 +22,7 @@ interface TaskPanelProps {
 
 export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -74,24 +76,50 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
   }, [open, callId, taskId]);
 
   const handleApprove = async (taskId: string) => {
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status: 'approved' })
-      .eq('id', taskId);
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: 'approved' })
+        .eq('id', taskId);
 
-    if (error) {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error approving task",
+          description: error.message
+        });
+      }
+    } catch (error) {
       console.error('Error approving task:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to approve task. Please try again."
+      });
     }
   };
 
   const handleDeny = async (taskId: string) => {
-    const { error } = await supabase
-      .from('tasks')
-      .update({ status: 'denied' })
-      .eq('id', taskId);
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: 'denied' })
+        .eq('id', taskId);
 
-    if (error) {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error denying task",
+          description: error.message
+        });
+      }
+    } catch (error) {
       console.error('Error denying task:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to deny task. Please try again."
+      });
     }
   };
 
