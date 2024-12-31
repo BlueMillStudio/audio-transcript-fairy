@@ -69,21 +69,23 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <div className="flex items-center justify-between px-4 py-2">
-          <SidebarTrigger>
-            <Menu className="h-6 w-6" />
-          </SidebarTrigger>
-        </div>
-        <MainNavigation />
-        {recentItems.length > 0 && (
-          <>
-            <SidebarSeparator />
-            <RecentItems items={recentItems} onRemoveItem={handleRemoveItem} />
-          </>
-        )}
-      </SidebarContent>
-    </Sidebar>
+    <>
+      <div className="fixed top-4 left-4 z-50">
+        <SidebarTrigger>
+          <Menu className="h-6 w-6" />
+        </SidebarTrigger>
+      </div>
+      <Sidebar>
+        <SidebarContent>
+          <MainNavigation />
+          {recentItems.length > 0 && (
+            <>
+              <SidebarSeparator />
+              <RecentItems items={recentItems} onRemoveItem={handleRemoveItem} />
+            </>
+          )}
+        </SidebarContent>
+      </Sidebar>
+    </>
   );
 }
