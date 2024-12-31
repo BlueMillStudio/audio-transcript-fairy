@@ -68,7 +68,7 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
           } else if (payload.eventType === 'UPDATE') {
             setTasks(current =>
               current.map(task =>
-                task.id === payload.new.id ? payload.new as Task : task
+                task.id === (payload.new as Task).id ? payload.new as Task : task
               )
             );
           } else if (payload.eventType === 'DELETE') {
