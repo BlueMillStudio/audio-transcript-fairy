@@ -18,12 +18,13 @@ import type { Task } from "@/types/task";
 interface AudioUploaderProps {
   onComplete?: () => void;
   triggerComponent?: React.ReactNode;
+  leadId?: string; // Add leadId prop
 }
 
 type ProspectType = 'good' | 'bad' | 'none';
 type ActionType = 'meeting' | 'proposal' | 'closed' | 'none';
 
-export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderProps) {
+export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUploaderProps) {
   const { toast } = useToast();
   const [showProspectDialog, setShowProspectDialog] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
@@ -89,20 +90,22 @@ export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderPro
       if (dbError) throw dbError;
 
       if (action === 'closed') {
-        // Trigger confetti animation
+        // Update lead status first
+        if (leadId) {
+          const { error: updateError } = await supabase
+            .from('leads')
+            .update({ status: 'closed 🎊' })
+            .eq('id', leadId);
+
+          if (updateError) throw updateError;
+        }
+
+        // Trigger confetti animation after status update
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 }
         });
-
-        // Update status with confetti emoji for closed deals
-        const { error: updateError } = await supabase
-          .from('leads')
-          .update({ status: 'closed 🎊' })
-          .eq('id', callData.id);
-
-        if (updateError) throw updateError;
 
         toast({
           title: "Deal Closed! 🎊",
@@ -131,16 +134,9 @@ export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderPro
 
       if (tasksError) throw tasksError;
 
-      // Save tasks
-      const { error: insertError } = await supabase
-        .from('tasks')
-        .insert(tasksData.tasks);
-
-      if (insertError) throw insertError;
-
       toast({
         title: "Success",
-        description: "Call processed and tasks created successfully!",
+        description: "Call processed successfully!",
       });
 
       if (onComplete) {

@@ -67,6 +67,7 @@ export const LeadsTable = ({
                 <div className="flex items-center gap-2">
                   <AudioUploader
                     onComplete={() => onCallNow(lead.id)}
+                    leadId={lead.id}
                     triggerComponent={
                       <Button
                         variant="ghost"
