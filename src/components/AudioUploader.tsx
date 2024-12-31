@@ -49,6 +49,15 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
 
         if (dbError) throw dbError;
 
+        if (leadId) {
+          const { error: updateError } = await supabase
+            .from('leads')
+            .update({ status: 'bad_prospect' })
+            .eq('id', leadId);
+
+          if (updateError) throw updateError;
+        }
+
         toast({
           title: "Status Updated",
           description: "Lead marked as bad prospect",

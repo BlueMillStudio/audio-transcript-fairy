@@ -30,15 +30,19 @@ interface LeadsTableProps {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'new':
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-purple-100 text-purple-800';
     case 'talking':
       return 'bg-blue-100 text-blue-800';
+    case 'contacted':
+      return 'bg-yellow-100 text-yellow-800';
     case 'meeting':
       return 'bg-purple-100 text-purple-800';
     case 'proposal':
       return 'bg-yellow-100 text-yellow-800';
-    case 'closed':
+    case 'CLOSED_DEAL':
       return 'bg-green-100 text-green-800';
+    case 'bad_prospect':
+      return 'bg-red-100 text-red-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -84,9 +88,7 @@ export const LeadsTable = ({
               <TableCell>
                 <Badge 
                   variant="secondary" 
-                  className={lead.status === 'closed' 
-                    ? 'bg-green-100 text-green-800' 
-                    : getStatusColor(lead.status)}
+                  className={getStatusColor(lead.status)}
                 >
                   {getStatusLabel(lead.status)}
                 </Badge>
@@ -153,7 +155,7 @@ export const LeadsTable = ({
                         Mark as Proposal
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'closed')}
+                        onClick={() => onUpdateStatus(lead.id, 'CLOSED_DEAL')}
                       >
                         Mark as Closed
                       </DropdownMenuItem>
