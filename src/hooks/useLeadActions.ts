@@ -11,8 +11,7 @@ export const useLeadActions = () => {
       const { error } = await supabase
         .from('leads')
         .update({ 
-          last_contacted: new Date().toISOString(),
-          status: 'contacted'
+          last_contacted: new Date().toISOString()
         })
         .eq('id', leadId);
 
@@ -61,7 +60,7 @@ export const useLeadActions = () => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ status: 'closed' })
+        .update({ status: 'CLOSED DEAL' })
         .eq('id', leadId);
 
       if (error) throw error;

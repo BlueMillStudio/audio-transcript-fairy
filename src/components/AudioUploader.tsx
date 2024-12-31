@@ -18,7 +18,7 @@ import type { Task } from "@/types/task";
 interface AudioUploaderProps {
   onComplete?: () => void;
   triggerComponent?: React.ReactNode;
-  leadId?: string; // Add leadId prop
+  leadId?: string;
 }
 
 type ProspectType = 'good' | 'bad' | 'none';
@@ -40,7 +40,6 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
     
     if (type === 'bad') {
       try {
-        // Save the call data with bad prospect status
         const { error: dbError } = await supabase
           .from('calls')
           .insert({
@@ -77,7 +76,6 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
     if (!processedCallData) return;
 
     try {
-      // First save the call data
       const { data: callData, error: dbError } = await supabase
         .from('calls')
         .insert({
@@ -90,17 +88,15 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
       if (dbError) throw dbError;
 
       if (action === 'closed') {
-        // Update lead status first
         if (leadId) {
           const { error: updateError } = await supabase
             .from('leads')
-            .update({ status: 'closed 🎊' })
+            .update({ status: 'CLOSED DEAL' })
             .eq('id', leadId);
 
           if (updateError) throw updateError;
         }
 
-        // Trigger confetti animation after status update
         confetti({
           particleCount: 100,
           spread: 70,
@@ -114,7 +110,6 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
       }
 
       if (action === 'proposal') {
-        // Get proposal details from the transcript
         const { data: proposalData, error: proposalError } = await supabase.functions
           .invoke('analyze-proposal', {
             body: { transcription: processedCallData.transcription },
@@ -123,7 +118,6 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
         if (proposalError) throw proposalError;
       }
 
-      // Generate tasks from the transcription
       const { data: tasksData, error: tasksError } = await supabase.functions
         .invoke('analyze-tasks', {
           body: { 
