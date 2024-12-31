@@ -9,6 +9,7 @@ import { useCampaignStats } from "@/hooks/useCampaignStats";
 import { useLeadsData } from "@/hooks/useLeadsData";
 import { useLeadActions } from "@/hooks/useLeadActions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CAMPAIGN_ID } from "@/hooks/useCampaignData";
 
 const CampaignContent = () => {
   const { 
@@ -21,7 +22,7 @@ const CampaignContent = () => {
 
   const { data: campaign, isLoading: campaignLoading, error: campaignError } = useCampaignData();
   const { data: stats, isLoading: statsLoading, error: statsError } = useCampaignStats();
-  const { data: leads, isLoading: leadsLoading, error: leadsError } = useLeadsData();
+  const { data: leads, isLoading: leadsLoading, error: leadsError, refetch: refetchLeads } = useLeadsData();
   const { 
     handleCallNow, 
     handleScheduleFollowUp, 
@@ -82,7 +83,11 @@ const CampaignContent = () => {
         avgDuration: "0m 0s",
       }} />
 
-      <SearchBar onSearch={setSearchQuery} />
+      <SearchBar 
+        onSearch={setSearchQuery} 
+        campaignId={CAMPAIGN_ID} 
+        onLeadAdded={refetchLeads} 
+      />
 
       <LeadsTable
         leads={leads || []}

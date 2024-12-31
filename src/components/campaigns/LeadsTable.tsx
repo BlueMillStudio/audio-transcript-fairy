@@ -16,6 +16,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AudioUploader } from "@/components/AudioUploader";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useState } from "react";
 import type { DatabaseLead } from "@/types/database";
 
 interface LeadsTableProps {
@@ -25,6 +34,147 @@ interface LeadsTableProps {
   onMarkCompleted: (leadId: string) => void;
   onUpdateStatus: (leadId: string, status: DatabaseLead['status']) => void;
 }
+
+export const LeadsTable = ({
+  leads,
+  onCallNow,
+  onScheduleFollowUp,
+  onMarkCompleted,
+  onUpdateStatus,
+}: LeadsTableProps) => {
+  const [showCallDialog, setShowCallDialog] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+
+  const handleCallClick = (leadId: string) => {
+    setSelectedLeadId(leadId);
+    setShowCallDialog(true);
+  };
+
+  const handleCallComplete = () => {
+    if (selectedLeadId) {
+      onCallNow(selectedLeadId);
+    }
+    setShowCallDialog(false);
+    setSelectedLeadId(null);
+  };
+
+  return (
+    <>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Phone Number</TableHead>
+              <TableHead>Last Contacted</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {leads.map((lead) => (
+              <TableRow key={lead.id}>
+                <TableCell className="font-medium">{lead.name}</TableCell>
+                <TableCell>{lead.company}</TableCell>
+                <TableCell>{lead.phone_number}</TableCell>
+                <TableCell>
+                  {lead.last_contacted
+                    ? format(new Date(lead.last_contacted), 'MMM d, yyyy')
+                    : 'Never'}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={getStatusColor(lead.status || '')}>
+                    {getStatusLabel(lead.status || 'not_contacted')}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCallClick(lead.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Call
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onScheduleFollowUp(lead.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Schedule
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onMarkCompleted(lead.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <CheckSquare className="h-4 w-4" />
+                      Complete
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => onUpdateStatus(lead.id, 'not_contacted')}
+                        >
+                          Mark as Not Contacted
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onUpdateStatus(lead.id, 'interested')}
+                        >
+                          Mark as Interested
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onUpdateStatus(lead.id, 'not_interested')}
+                        >
+                          Mark as Not Interested
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onUpdateStatus(lead.id, 'follow_up')}
+                        >
+                          Mark for Follow-up
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onUpdateStatus(lead.id, 'closed')}
+                        >
+                          Mark as Closed
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={showCallDialog} onOpenChange={setShowCallDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record Call</DialogTitle>
+            <DialogDescription>
+              Upload the audio recording of your call with this lead.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <AudioUploader onComplete={handleCallComplete} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -45,113 +195,4 @@ const getStatusLabel = (status: string) => {
   return status.split('_').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
-};
-
-export const LeadsTable = ({
-  leads,
-  onCallNow,
-  onScheduleFollowUp,
-  onMarkCompleted,
-  onUpdateStatus,
-}: LeadsTableProps) => {
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Phone Number</TableHead>
-            <TableHead>Last Contacted</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leads.map((lead) => (
-            <TableRow key={lead.id}>
-              <TableCell className="font-medium">{lead.name}</TableCell>
-              <TableCell>{lead.company}</TableCell>
-              <TableCell>{lead.phone_number}</TableCell>
-              <TableCell>
-                {lead.last_contacted
-                  ? format(new Date(lead.last_contacted), 'MMM d, yyyy')
-                  : 'Never'}
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary" className={getStatusColor(lead.status || '')}>
-                  {getStatusLabel(lead.status || 'not_contacted')}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onCallNow(lead.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <Phone className="h-4 w-4" />
-                    Call
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onScheduleFollowUp(lead.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Schedule
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onMarkCompleted(lead.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <CheckSquare className="h-4 w-4" />
-                    Complete
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'not_contacted')}
-                      >
-                        Mark as Not Contacted
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'interested')}
-                      >
-                        Mark as Interested
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'not_interested')}
-                      >
-                        Mark as Not Interested
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'follow_up')}
-                      >
-                        Mark for Follow-up
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'closed')}
-                      >
-                        Mark as Closed
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
 };
