@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      archived_tasks: {
+        Row: {
+          archived_at: string
+          assignee: string | null
+          call_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          original_task_id: string | null
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string
+          assignee?: string | null
+          call_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          original_task_id?: string | null
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string
+          assignee?: string | null
+          call_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          original_task_id?: string | null
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "archived_tasks_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "archived_tasks_original_task_id_fkey"
+            columns: ["original_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
           audio_url: string | null
