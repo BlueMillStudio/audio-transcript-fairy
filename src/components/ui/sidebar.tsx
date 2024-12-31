@@ -24,10 +24,10 @@ export function Sidebar({ className }: SidebarProps) {
       active: location.pathname === "/tasks"
     },
     {
-      label: "Clients",
+      label: "Partners",
       icon: Users,
-      href: "/clients",
-      active: location.pathname === "/clients"
+      href: "/partners",
+      active: location.pathname === "/partners"
     },
     {
       label: "Sales",
