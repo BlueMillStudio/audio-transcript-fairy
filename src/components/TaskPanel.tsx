@@ -34,7 +34,17 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
         query = query.eq('id', taskId);
       }
       
-      const { data } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching tasks",
+          description: error.message
+        });
+        return;
+      }
+      
       if (data) setTasks(data);
     };
 
@@ -73,14 +83,16 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, callId, taskId]);
+  }, [open, callId, taskId, toast]);
 
   const handleApprove = async (taskId: string) => {
     try {
       const { error } = await supabase
         .from('tasks')
         .update({ status: 'approved' })
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .select()
+        .single();
 
       if (error) {
         toast({
@@ -104,7 +116,9 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
       const { error } = await supabase
         .from('tasks')
         .update({ status: 'denied' })
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .select()
+        .single();
 
       if (error) {
         toast({
