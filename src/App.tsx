@@ -8,6 +8,10 @@ import Index from "./pages/Index";
 import Clients from "./pages/Clients";
 import Tasks from "./pages/Tasks";
 import CallDetails from "./pages/CallDetails";
+import Sales from "./pages/Sales";
+import Campaigns from "./pages/Campaigns";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +29,10 @@ const App = () => (
               <Route path="/clients" element={<Clients />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/call/:id" element={<CallDetails />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/campaigns" element={<Campaigns />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
         </div>
