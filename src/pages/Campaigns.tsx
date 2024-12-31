@@ -9,6 +9,9 @@ import { useCampaignStats } from "@/hooks/useCampaignStats";
 import { useLeadsData } from "@/hooks/useLeadsData";
 import { useLeadActions } from "@/hooks/useLeadActions";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Database } from "@/integrations/supabase/types";
+
+type Lead = Database['public']['Tables']['leads']['Row'];
 
 const CampaignContent = () => {
   const { 
