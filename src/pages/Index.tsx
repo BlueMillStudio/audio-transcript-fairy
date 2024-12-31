@@ -1,8 +1,8 @@
 import { CallsTable } from "@/components/CallsTable";
 import { AudioUploader } from "@/components/AudioUploader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart } from "@/components/ui/chart";
 import { PhoneCall, Target, ChartBar, CheckSquare } from "lucide-react";
+import { KanbanBoard } from "@/components/KanbanBoard";
 
 const statsData = [
   {
@@ -11,29 +11,20 @@ const statsData = [
     icon: PhoneCall,
   },
   {
-    title: "Campaigns",
+    title: "Total Leads",
     value: "0",
     icon: Target,
   },
   {
-    title: "Sales",
+    title: "Proposals",
     value: "0",
     icon: ChartBar,
   },
   {
-    title: "Tasks Finished",
+    title: "Closed Deals",
     value: "0",
     icon: CheckSquare,
   },
-];
-
-const chartData = [
-  { name: "Jan", calls: 40, sales: 24 },
-  { name: "Feb", calls: 30, sales: 18 },
-  { name: "Mar", calls: 20, sales: 12 },
-  { name: "Apr", calls: 27, sales: 15 },
-  { name: "May", calls: 18, sales: 9 },
-  { name: "Jun", calls: 23, sales: 14 },
 ];
 
 const Index = () => {
@@ -60,32 +51,7 @@ const Index = () => {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <BarChart
-              data={chartData}
-              categories={["calls", "sales"]}
-              index="name"
-              colors={["sky", "blue"]}
-              yAxisWidth={30}
-              height={350}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Active Campaigns</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">No active campaigns</p>
-          </CardContent>
-        </Card>
-      </div>
+      <KanbanBoard />
 
       <CallsTable />
     </div>

@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AudioUploader } from "@/components/AudioUploader";
 import type { Lead } from "@/types/campaign";
 
 interface LeadsTableProps {
@@ -64,15 +65,19 @@ export const LeadsTable = ({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onCallNow(lead.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <Phone className="h-4 w-4" />
-                    Call
-                  </Button>
+                  <AudioUploader
+                    onComplete={() => onCallNow(lead.id)}
+                    triggerComponent={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <Phone className="h-4 w-4" />
+                        Call
+                      </Button>
+                    }
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -99,24 +104,24 @@ export const LeadsTable = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'not_contacted')}
+                        onClick={() => onUpdateStatus(lead.id, 'new')}
                       >
-                        Mark as Not Contacted
+                        Mark as New
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'interested')}
+                        onClick={() => onUpdateStatus(lead.id, 'talking')}
                       >
-                        Mark as Interested
+                        Mark as Talking
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'not_interested')}
+                        onClick={() => onUpdateStatus(lead.id, 'meeting')}
                       >
-                        Mark as Not Interested
+                        Mark for Meeting
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'follow_up')}
+                        onClick={() => onUpdateStatus(lead.id, 'proposal')}
                       >
-                        Mark for Follow-up
+                        Mark as Proposal
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onUpdateStatus(lead.id, 'closed')}
@@ -137,16 +142,18 @@ export const LeadsTable = ({
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'interested':
-      return 'bg-green-100 text-green-800';
-    case 'not_interested':
-      return 'bg-red-100 text-red-800';
-    case 'follow_up':
-      return 'bg-blue-100 text-blue-800';
-    case 'closed':
+    case 'new':
       return 'bg-gray-100 text-gray-800';
-    default:
+    case 'talking':
+      return 'bg-blue-100 text-blue-800';
+    case 'meeting':
+      return 'bg-purple-100 text-purple-800';
+    case 'proposal':
       return 'bg-yellow-100 text-yellow-800';
+    case 'closed':
+      return 'bg-green-100 text-green-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
