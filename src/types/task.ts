@@ -18,4 +18,5 @@ export type FilterOptions = {
   status?: string;
   assignee?: string;
   dueDate?: 'overdue' | 'today' | 'week' | 'month' | null;
+  sortBy?: 'oldest' | undefined;
 };
