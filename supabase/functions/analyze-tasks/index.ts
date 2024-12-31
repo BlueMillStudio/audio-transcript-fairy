@@ -25,6 +25,8 @@ serve(async (req) => {
       throw new Error('GROQ_API_KEY is not set');
     }
 
+    console.log('Analyzing transcription for call_id:', call_id);
+
     // Call LLaMA to analyze the transcription and generate tasks
     const analysisResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -62,6 +64,8 @@ serve(async (req) => {
     const analysisData = await analysisResponse.json();
     const tasks = JSON.parse(analysisData.choices[0].message.content).tasks;
 
+    console.log('Generated tasks:', tasks);
+
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -72,20 +76,23 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Insert tasks into the database without specifying IDs
+    // Prepare tasks for insertion - explicitly omit any id field
+    const tasksToInsert = tasks.map((task: any) => ({
+      title: task.title,
+      description: task.description,
+      priority: task.priority.toLowerCase(),
+      due_date: task.due_date,
+      call_id: call_id,
+      status: 'pending',
+      active_status: 'active'
+    }));
+
+    console.log('Inserting tasks:', tasksToInsert);
+
+    // Insert tasks into the database
     const { data: insertedTasks, error: insertError } = await supabase
       .from('tasks')
-      .insert(
-        tasks.map((task: any) => ({
-          title: task.title,
-          description: task.description,
-          priority: task.priority.toLowerCase(),
-          due_date: task.due_date,
-          call_id: call_id,
-          status: 'pending',
-          active_status: 'active'
-        }))
-      )
+      .insert(tasksToInsert)
       .select();
 
     if (insertError) {
@@ -93,11 +100,13 @@ serve(async (req) => {
       throw insertError;
     }
 
+    console.log('Successfully inserted tasks:', insertedTasks);
+
     return new Response(JSON.stringify({ tasks: insertedTasks }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in analyze-tasks function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
