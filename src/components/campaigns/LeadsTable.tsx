@@ -16,7 +16,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
-import { TaskPanel } from "./TaskPanel";
 import type { Database } from "@/integrations/supabase/types";
 import { AddLeadDialog } from "./AddLeadDialog";
 import { CallDialog } from "./CallDialog";
@@ -25,6 +24,14 @@ import { format } from "date-fns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type Lead = Database['public']['Tables']['leads']['Row'];
+
+interface LeadsTableProps {
+  leads: Lead[];
+  onCallNow: (leadId: string) => void;
+  onScheduleFollowUp: (leadId: string) => void;
+  onMarkCompleted: (leadId: string) => void;
+  onUpdateStatus: (leadId: string, status: string) => void;
+}
 
 export const LeadsTable = ({
   leads,
