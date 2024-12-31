@@ -19,9 +19,16 @@ export function ReviewState({
 }: ReviewStateProps) {
   // Only show the first task in the list
   const currentTask = tasks[0];
+  const totalTasks = tasks.length + approvedTasks.length;
+  const currentTaskNumber = totalTasks - tasks.length + 1;
 
   return (
     <div className="space-y-4">
+      {currentTask && (
+        <div className="text-sm font-medium text-gray-500 text-center">
+          Task {currentTaskNumber} of {totalTasks}
+        </div>
+      )}
       <div className="space-y-4">
         {currentTask && (
           <div className="transform transition-all duration-300 animate-fade-in">
