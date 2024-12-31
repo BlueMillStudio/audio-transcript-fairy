@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,14 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CallActionDialog } from "@/components/CallActionDialog";
-import { AudioUploader } from "@/components/AudioUploader";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface Lead {
   id: string;
@@ -73,124 +64,106 @@ export const LeadsTable = ({
   onMarkCompleted,
   onUpdateStatus,
 }: LeadsTableProps) => {
-  const [showCallDialog, setShowCallDialog] = useState(false);
-  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-
-  const handleCallClick = (leadId: string) => {
-    setSelectedLeadId(leadId);
-    setShowCallDialog(true);
-  };
-
   return (
-    <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Phone Number</TableHead>
-              <TableHead>Last Contacted</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Assigned Agent</TableHead>
-              <TableHead>Actions</TableHead>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Company</TableHead>
+            <TableHead>Phone Number</TableHead>
+            <TableHead>Last Contacted</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Assigned Agent</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {leads.map((lead) => (
+            <TableRow key={lead.id}>
+              <TableCell className="font-medium">{lead.name}</TableCell>
+              <TableCell>{lead.company}</TableCell>
+              <TableCell>{lead.phoneNumber}</TableCell>
+              <TableCell>
+                {lead.lastContacted
+                  ? format(new Date(lead.lastContacted), 'MMM d, yyyy')
+                  : 'Never'}
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary" className={getStatusColor(lead.status)}>
+                  {getStatusLabel(lead.status)}
+                </Badge>
+              </TableCell>
+              <TableCell>{lead.assignedAgent}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onCallNow(lead.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Call
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onScheduleFollowUp(lead.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Schedule
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onMarkCompleted(lead.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <CheckSquare className="h-4 w-4" />
+                    Complete
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => onUpdateStatus(lead.id, 'not_contacted')}
+                      >
+                        Mark as Not Contacted
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onUpdateStatus(lead.id, 'interested')}
+                      >
+                        Mark as Interested
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onUpdateStatus(lead.id, 'not_interested')}
+                      >
+                        Mark as Not Interested
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onUpdateStatus(lead.id, 'follow_up')}
+                      >
+                        Mark for Follow-up
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onUpdateStatus(lead.id, 'closed')}
+                      >
+                        Mark as Closed
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {leads.map((lead) => (
-              <TableRow key={lead.id}>
-                <TableCell className="font-medium">{lead.name}</TableCell>
-                <TableCell>{lead.company}</TableCell>
-                <TableCell>{lead.phoneNumber}</TableCell>
-                <TableCell>
-                  {lead.lastContacted
-                    ? format(new Date(lead.lastContacted), 'MMM d, yyyy')
-                    : 'Never'}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className={getStatusColor(lead.status)}>
-                    {getStatusLabel(lead.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>{lead.assignedAgent}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCallClick(lead.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <Phone className="h-4 w-4" />
-                      Call
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onScheduleFollowUp(lead.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <Calendar className="h-4 w-4" />
-                      Schedule
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onMarkCompleted(lead.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <CheckSquare className="h-4 w-4" />
-                      Complete
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => onUpdateStatus(lead.id, 'not_contacted')}
-                        >
-                          Mark as Not Contacted
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onUpdateStatus(lead.id, 'interested')}
-                        >
-                          Mark as Interested
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onUpdateStatus(lead.id, 'not_interested')}
-                        >
-                          Mark as Not Interested
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onUpdateStatus(lead.id, 'follow_up')}
-                        >
-                          Mark for Follow-up
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onUpdateStatus(lead.id, 'closed')}
-                        >
-                          Mark as Closed
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <Dialog open={showCallDialog} onOpenChange={setShowCallDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Record Call</DialogTitle>
-          </DialogHeader>
-          <AudioUploader />
-        </DialogContent>
-      </Dialog>
-    </>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };

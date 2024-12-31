@@ -5,11 +5,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { TaskReviewItem } from "./TaskReviewItem";
-import { useToast } from "@/hooks/use-toast";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
@@ -22,7 +22,6 @@ interface TaskPanelProps {
 
 export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -34,17 +33,7 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
         query = query.eq('id', taskId);
       }
       
-      const { data, error } = await query.order('created_at', { ascending: false });
-      
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching tasks",
-          description: error.message
-        });
-        return;
-      }
-      
+      const { data } = await query.order('created_at', { ascending: false });
       if (data) setTasks(data);
     };
 
@@ -68,7 +57,7 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
           } else if (payload.eventType === 'UPDATE') {
             setTasks(current =>
               current.map(task =>
-                task.id === (payload.new as Task).id ? payload.new as Task : task
+                task.id === payload.new.id ? payload.new as Task : task
               )
             );
           } else if (payload.eventType === 'DELETE') {
@@ -83,53 +72,31 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, callId, taskId, toast]);
+  }, [open, callId, taskId]);
 
-  const handleApprove = async (taskId: string) => {
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ status: 'approved' })
-        .eq('id', taskId);
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error approving task",
-          description: error.message
-        });
-      }
-    } catch (error) {
-      console.error('Error approving task:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to approve task. Please try again."
-      });
+  const getPriorityColor = (priority: string | null) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleDeny = async (taskId: string) => {
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ status: 'denied' })
-        .eq('id', taskId);
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error denying task",
-          description: error.message
-        });
-      }
-    } catch (error) {
-      console.error('Error denying task:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to deny task. Please try again."
-      });
+  const getStatusColor = (status: string | null) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -142,12 +109,35 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
         <ScrollArea className="h-[calc(100vh-100px)] pr-4">
           <div className="space-y-4 mt-4">
             {tasks.map((task) => (
-              <TaskReviewItem
+              <div
                 key={task.id}
-                task={task}
-                onApprove={() => handleApprove(task.id)}
-                onDeny={() => handleDeny(task.id)}
-              />
+                className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm"
+              >
+                <div className="flex items-start justify-between">
+                  <h3 className="font-semibold">{task.title}</h3>
+                  <div className="flex gap-2">
+                    <Badge variant="secondary" className={getPriorityColor(task.priority)}>
+                      {task.priority}
+                    </Badge>
+                    <Badge variant="secondary" className={getStatusColor(task.status)}>
+                      {task.status}
+                    </Badge>
+                  </div>
+                </div>
+                {task.description && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {task.description}
+                  </p>
+                )}
+                <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Assigned to: {task.assignee || 'Unassigned'}</span>
+                  {task.due_date && (
+                    <span>
+                      Due: {format(new Date(task.due_date), 'MMM d, yyyy')}
+                    </span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </ScrollArea>

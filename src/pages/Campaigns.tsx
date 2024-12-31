@@ -19,9 +19,9 @@ const CampaignContent = () => {
     setSearchQuery 
   } = useCampaignContext();
 
-  const { data: campaign, isLoading: campaignLoading, error: campaignError, refetch: refetchCampaign } = useCampaignData();
+  const { data: campaign, isLoading: campaignLoading, error: campaignError } = useCampaignData();
   const { data: stats, isLoading: statsLoading, error: statsError } = useCampaignStats();
-  const { data: leads, isLoading: leadsLoading, error: leadsError, refetch: refetchLeads } = useLeadsData();
+  const { data: leads, isLoading: leadsLoading, error: leadsError } = useLeadsData();
   const { 
     handleCallNow, 
     handleScheduleFollowUp, 
@@ -57,11 +57,6 @@ const CampaignContent = () => {
     );
   }
 
-  const handleLeadsAdded = () => {
-    refetchLeads();
-    refetchCampaign();
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -87,11 +82,7 @@ const CampaignContent = () => {
         avgDuration: "0m 0s",
       }} />
 
-      <SearchBar 
-        onSearch={setSearchQuery} 
-        campaignId={campaign.id}
-        onLeadsAdded={handleLeadsAdded}
-      />
+      <SearchBar onSearch={setSearchQuery} />
 
       <LeadsTable
         leads={leads || []}
