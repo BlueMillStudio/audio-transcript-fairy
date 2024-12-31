@@ -31,6 +31,7 @@ export function CallActionDialog({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [approvedTasks, setApprovedTasks] = useState<Task[]>([]);
   const [deniedTasks, setDeniedTasks] = useState<Set<string>>(new Set());
+  const [totalTasks, setTotalTasks] = useState<number>(0);
 
   const handleTaskAction = async (action: "nothing" | "task") => {
     if (action === "task") {
@@ -39,6 +40,7 @@ export function CallActionDialog({
         const generatedTasks = await onAction(action);
         if (generatedTasks) {
           setTasks(generatedTasks);
+          setTotalTasks(generatedTasks.length);
           setDialogState("review");
         }
       } catch (error) {
@@ -72,22 +74,21 @@ export function CallActionDialog({
   };
 
   const handleOpenChange = (open: boolean) => {
-    // Only allow closing through the save button or explicit actions
-    if (!open && dialogState === "review") {
-      return;
-    }
-    if (open) {
+    if (!open) {
       setDialogState("initial");
       setTasks([]);
       setApprovedTasks([]);
       setDeniedTasks(new Set());
+      setTotalTasks(0);
     }
     onOpenChange(open);
   };
 
+  const allTasksReviewed = tasks.length === 0 && (approvedTasks.length + deniedTasks.size === totalTasks);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" hideCloseButton={dialogState === "review"}>
         <DialogHeader>
           <DialogTitle>
             {dialogState === "initial"
@@ -178,7 +179,11 @@ export function CallActionDialog({
             )}
             {dialogState === "review" && (
               <div className="flex justify-end mt-4 pt-4 border-t">
-                <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
+                <Button 
+                  onClick={handleSave} 
+                  className="bg-green-500 hover:bg-green-600"
+                  disabled={!allTasksReviewed}
+                >
                   Save Tasks
                 </Button>
               </div>
