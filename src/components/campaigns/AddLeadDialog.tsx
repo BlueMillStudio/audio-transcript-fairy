@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AddLeadDialogProps {
   campaignId: string;
@@ -22,172 +23,160 @@ interface AddLeadDialogProps {
 export function AddLeadDialog({ campaignId, onLeadAdded }: AddLeadDialogProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [company, setCompany] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const fetchContacts = async (query: string) => {
     try {
-      const { error } = await supabase
+      setLoading(true);
+      let contactQuery = supabase
         .from('leads')
-        .insert({
-          campaign_id: campaignId,
-          name,
-          company,
-          phone_number: phoneNumber,
-          status: 'not_contacted'
-        });
+        .select('*')
+        .is('campaign_id', null);
 
+      if (query) {
+        contactQuery = contactQuery.or(`name.ilike.%${query}%,company.ilike.%${query}%`);
+      }
+
+      const { data, error } = await contactQuery;
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Lead added successfully",
-      });
-      
-      setOpen(false);
-      onLeadAdded();
-      
-      // Reset form
-      setName("");
-      setCompany("");
-      setPhoneNumber("");
+      setContacts(data || []);
     } catch (error) {
-      console.error('Error adding lead:', error);
+      console.error('Error fetching contacts:', error);
       toast({
         title: "Error",
-        description: "Failed to add lead. Please try again.",
+        description: "Failed to fetch contacts. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    fetchContacts(query);
+  };
+
+  const handleContactSelect = (contactId: string) => {
+    setSelectedContacts(prev => 
+      prev.includes(contactId)
+        ? prev.filter(id => id !== contactId)
+        : [...prev, contactId]
+    );
+  };
+
+  const handleSubmit = async () => {
+    if (selectedContacts.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one contact.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
-      const fileContent = await file.text();
-      let leads = [];
-
-      if (file.type === "application/json") {
-        leads = JSON.parse(fileContent);
-      } else if (file.type === "text/csv") {
-        // Simple CSV parsing (you might want to use a library for more robust parsing)
-        const rows = fileContent.split('\n');
-        const headers = rows[0].split(',');
-        
-        leads = rows.slice(1).map(row => {
-          const values = row.split(',');
-          const lead = {};
-          headers.forEach((header, index) => {
-            lead[header.trim()] = values[index]?.trim();
-          });
-          return lead;
-        });
-      } else {
-        throw new Error("Unsupported file type");
-      }
-
-      // Add campaign_id and status to each lead
-      const formattedLeads = leads.map(lead => ({
-        ...lead,
-        campaign_id: campaignId,
-        status: 'not_contacted'
-      }));
-
       const { error } = await supabase
         .from('leads')
-        .insert(formattedLeads);
+        .update({ campaign_id: campaignId })
+        .in('id', selectedContacts);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `${leads.length} leads imported successfully`,
+        description: `${selectedContacts.length} contacts added to campaign`,
       });
       
       setOpen(false);
       onLeadAdded();
+      setSelectedContacts([]);
+      setSearchQuery("");
+      setContacts([]);
     } catch (error) {
-      console.error('Error importing leads:', error);
+      console.error('Error adding contacts:', error);
       toast({
         title: "Error",
-        description: "Failed to import leads. Please check your file format and try again.",
+        description: "Failed to add contacts. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      if (newOpen) {
+        fetchContacts("");
+      } else {
+        setSelectedContacts([]);
+        setSearchQuery("");
+        setContacts([]);
+      }
+    }}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
           Add New Lead
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New Lead</DialogTitle>
+          <DialogTitle>Add Leads to Campaign</DialogTitle>
           <DialogDescription>
-            Add a new lead manually or import multiple leads from a file.
+            Search and select contacts to add to this campaign.
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+        <div className="space-y-4">
+          <Input
+            placeholder="Search contacts..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+          />
           
-          <div className="space-y-2">
-            <Label htmlFor="company">Company</Label>
-            <Input
-              id="company"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Input
-              id="phoneNumber"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </div>
+          <ScrollArea className="h-[300px] rounded-md border p-4">
+            {loading ? (
+              <div className="text-center py-4">Loading contacts...</div>
+            ) : contacts.length === 0 ? (
+              <div className="text-center py-4">No contacts found</div>
+            ) : (
+              <div className="space-y-4">
+                {contacts.map((contact) => (
+                  <div
+                    key={contact.id}
+                    className="flex items-center space-x-4 p-2 hover:bg-accent rounded-lg cursor-pointer"
+                    onClick={() => handleContactSelect(contact.id)}
+                  >
+                    <Checkbox
+                      checked={selectedContacts.includes(contact.id)}
+                      onCheckedChange={() => handleContactSelect(contact.id)}
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium">{contact.name}</p>
+                      {contact.company && (
+                        <p className="text-sm text-muted-foreground">{contact.company}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
 
           <div className="flex justify-between items-center pt-4">
-            <div className="flex items-center">
-              <Input
-                type="file"
-                accept=".json,.csv"
-                className="hidden"
-                id="file-upload"
-                onChange={handleFileUpload}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => document.getElementById('file-upload')?.click()}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Import Leads
-              </Button>
-            </div>
-            
-            <Button type="submit">Save Lead</Button>
+            <p className="text-sm text-muted-foreground">
+              {selectedContacts.length} contacts selected
+            </p>
+            <Button onClick={handleSubmit}>
+              Add to Campaign
+            </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
