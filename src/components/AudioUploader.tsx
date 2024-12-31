@@ -36,8 +36,40 @@ export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderPro
 
   const handleProspectSelection = async (type: ProspectType) => {
     setProspectType(type);
-    setShowProspectDialog(false);
-    setShowActionDialog(true);
+    
+    if (type === 'bad') {
+      try {
+        // Save the call data with bad prospect status
+        const { error: dbError } = await supabase
+          .from('calls')
+          .insert({
+            ...processedCallData,
+            prospect_type: 'bad',
+          });
+
+        if (dbError) throw dbError;
+
+        toast({
+          title: "Status Updated",
+          description: "Lead marked as bad prospect",
+        });
+
+        if (onComplete) {
+          onComplete();
+        }
+      } catch (error) {
+        console.error("Error updating status:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update status. Please try again.",
+          variant: "destructive",
+        });
+      }
+      setShowProspectDialog(false);
+    } else {
+      setShowProspectDialog(false);
+      setShowActionDialog(true);
+    }
   };
 
   const handleActionSelection = async (action: ActionType) => {
@@ -57,10 +89,24 @@ export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderPro
       if (dbError) throw dbError;
 
       if (action === 'closed') {
+        // Trigger confetti animation
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 }
+        });
+
+        // Update status with confetti emoji for closed deals
+        const { error: updateError } = await supabase
+          .from('leads')
+          .update({ status: 'closed 🎊' })
+          .eq('id', callData.id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Deal Closed! 🎊",
+          description: "Congratulations on closing the deal!",
         });
       }
 
@@ -72,9 +118,6 @@ export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderPro
           });
 
         if (proposalError) throw proposalError;
-        
-        // Save proposal details
-        // Note: You'll need to create a proposals table and implement this part
       }
 
       // Generate tasks from the transcription
