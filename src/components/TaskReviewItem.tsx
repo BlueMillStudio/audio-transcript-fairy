@@ -19,13 +19,20 @@ interface TaskReviewItemProps {
 }
 
 export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps) {
-  const [editedTask, setEditedTask] = useState(task);
+  const [editedTask, setEditedTask] = useState({
+    ...task,
+    status: "pending" // Ensure we set a valid initial status
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   const handleApprove = () => {
-    // Remove the id from the task to let Supabase generate a new one
+    // Remove the id and ensure status is set to pending
     const { id, ...taskWithoutId } = editedTask;
-    onApprove(taskWithoutId as Task);
+    const taskToApprove = {
+      ...taskWithoutId,
+      status: "pending"
+    } as Task;
+    onApprove(taskToApprove);
   };
 
   return (
