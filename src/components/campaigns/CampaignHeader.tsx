@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface CampaignHeaderProps {
   title: string;
-  status: 'active' | 'paused' | 'completed';
+  status: string;
   campaignId: string;
 }
 

@@ -7,6 +7,8 @@ import { CampaignFilters } from "@/components/campaigns/CampaignFilters";
 import { SearchBar } from "@/components/campaigns/SearchBar";
 import { LeadsTable } from "@/components/campaigns/LeadsTable";
 import { useToast } from "@/components/ui/use-toast";
+import { DatabaseCampaign, DatabaseLead } from "@/types/database";
+import { mapDatabaseLeadToLead } from "@/types/campaign";
 
 const Campaigns = () => {
   const [dateRange, setDateRange] = useState("week");
@@ -25,7 +27,7 @@ const Campaigns = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as DatabaseCampaign;
     },
   });
 
@@ -50,8 +52,8 @@ const Campaigns = () => {
         leadsContacted,
         conversions,
         followUps,
-        droppedCalls: 0, // This will be implemented when we add call tracking
-        avgDuration: "0m 0s", // This will be implemented when we add call tracking
+        droppedCalls: 0,
+        avgDuration: "0m 0s",
       };
     },
   });
@@ -75,7 +77,7 @@ const Campaigns = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return (data as DatabaseLead[]).map(mapDatabaseLeadToLead);
     },
   });
 

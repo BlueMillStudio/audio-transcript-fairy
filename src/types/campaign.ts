@@ -1,26 +1,27 @@
-export interface Campaign {
-  id: string;
-  title: string;
+import type { DatabaseCampaign, DatabaseLead } from './database';
+
+export interface Campaign extends Omit<DatabaseCampaign, 'status'> {
   status: 'active' | 'paused' | 'completed';
-  start_date: string;
-  end_date: string | null;
-  target_leads: number | null;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Lead {
   id: string;
-  campaign_id: string;
   name: string;
-  company: string | null;
-  phone_number: string | null;
-  email: string | null;
-  status: 'not_contacted' | 'contacted' | 'interested' | 'not_interested' | 'follow_up' | 'closed';
-  assigned_agent: string | null;
-  last_contacted: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
+  company: string;
+  phoneNumber: string;
+  lastContacted: Date | null;
+  status: 'not_contacted' | 'interested' | 'not_interested' | 'follow_up' | 'closed';
+  assignedAgent: string;
+  notes: string;
 }
+
+export const mapDatabaseLeadToLead = (dbLead: DatabaseLead): Lead => ({
+  id: dbLead.id,
+  name: dbLead.name,
+  company: dbLead.company || '',
+  phoneNumber: dbLead.phone_number || '',
+  lastContacted: dbLead.last_contacted ? new Date(dbLead.last_contacted) : null,
+  status: (dbLead.status || 'not_contacted') as Lead['status'],
+  assignedAgent: dbLead.assigned_agent || '',
+  notes: dbLead.notes || '',
+});
