@@ -23,7 +23,9 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
   const [isEditing, setIsEditing] = useState(false);
 
   const handleApprove = () => {
-    onApprove(editedTask);
+    // Remove the id from the task to let Supabase generate a new one
+    const { id, ...taskWithoutId } = editedTask;
+    onApprove(taskWithoutId as Task);
   };
 
   return (
