@@ -1,12 +1,18 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
+import { AddLeadDialog } from "./AddLeadDialog";
 
 interface SearchBarProps {
   onSearch: (value: string) => void;
+  campaignId: string;
+  onLeadsAdded: () => void;
 }
 
-export const SearchBar = ({ onSearch }: SearchBarProps) => {
+export const SearchBar = ({ onSearch, campaignId, onLeadsAdded }: SearchBarProps) => {
+  const [showAddLeadDialog, setShowAddLeadDialog] = useState(false);
+
   return (
     <div className="flex items-center gap-4">
       <div className="relative flex-1">
@@ -17,7 +23,16 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
           onChange={(e) => onSearch(e.target.value)}
         />
       </div>
-      <Button>Add New Lead</Button>
+      <Button onClick={() => setShowAddLeadDialog(true)}>
+        <Plus className="mr-2 h-4 w-4" />
+        Add New Lead
+      </Button>
+      <AddLeadDialog
+        open={showAddLeadDialog}
+        onOpenChange={setShowAddLeadDialog}
+        campaignId={campaignId}
+        onLeadsAdded={onLeadsAdded}
+      />
     </div>
   );
 };
