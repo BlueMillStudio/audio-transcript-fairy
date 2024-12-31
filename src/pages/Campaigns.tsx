@@ -3,6 +3,7 @@ import { CampaignStats } from "@/components/campaigns/CampaignStats";
 import { CampaignFilters } from "@/components/campaigns/CampaignFilters";
 import { SearchBar } from "@/components/campaigns/SearchBar";
 import { LeadsTable } from "@/components/campaigns/LeadsTable";
+import { ContactsView } from "@/components/campaigns/ContactsView";
 import { CampaignProvider, useCampaignContext } from "@/contexts/CampaignContext";
 import { useCampaignData } from "@/hooks/useCampaignData";
 import { useCampaignStats } from "@/hooks/useCampaignStats";
@@ -10,6 +11,8 @@ import { useLeadsData } from "@/hooks/useLeadsData";
 import { useLeadActions } from "@/hooks/useLeadActions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CAMPAIGN_ID } from "@/hooks/useCampaignData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, ListTodo } from "lucide-react";
 
 const CampaignContent = () => {
   const { 
@@ -83,19 +86,38 @@ const CampaignContent = () => {
         avgDuration: "0m 0s",
       }} />
 
-      <SearchBar 
-        onSearch={setSearchQuery} 
-        campaignId={CAMPAIGN_ID} 
-        onLeadAdded={refetchLeads} 
-      />
+      <Tabs defaultValue="leads" className="w-full">
+        <TabsList>
+          <TabsTrigger value="leads" className="flex items-center gap-2">
+            <ListTodo className="h-4 w-4" />
+            Leads
+          </TabsTrigger>
+          <TabsTrigger value="contacts" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Contacts
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="leads">
+          <SearchBar 
+            onSearch={setSearchQuery} 
+            campaignId={CAMPAIGN_ID} 
+            onLeadAdded={refetchLeads} 
+          />
 
-      <LeadsTable
-        leads={leads || []}
-        onCallNow={handleCallNow}
-        onScheduleFollowUp={handleScheduleFollowUp}
-        onMarkCompleted={handleMarkCompleted}
-        onUpdateStatus={handleUpdateStatus}
-      />
+          <LeadsTable
+            leads={leads || []}
+            onCallNow={handleCallNow}
+            onScheduleFollowUp={handleScheduleFollowUp}
+            onMarkCompleted={handleMarkCompleted}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        </TabsContent>
+        
+        <TabsContent value="contacts">
+          <ContactsView campaignId={CAMPAIGN_ID} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
