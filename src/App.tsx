@@ -5,10 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Sidebar } from "@/components/ui/sidebar";
 import Index from "./pages/Index";
-import Partners from "./pages/Partners";
 import Tasks from "./pages/Tasks";
 import CallDetails from "./pages/CallDetails";
-import Sales from "./pages/Sales";
 import Campaigns from "./pages/Campaigns";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
@@ -26,10 +24,8 @@ const App = () => (
           <main className="flex-1 p-8">
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/partners" element={<Partners />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/call/:id" element={<CallDetails />} />
-              <Route path="/sales" element={<Sales />} />
               <Route path="/campaigns" element={<Campaigns />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
