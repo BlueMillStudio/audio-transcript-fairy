@@ -5,8 +5,8 @@ import type { Task } from "@/types/task";
 
 interface TaskReviewItemProps {
   task: Task;
-  onApprove: (task: Task) => void;
-  onDeny: (taskId: string) => void;
+  onApprove: () => void;
+  onDeny: () => void;
 }
 
 export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps) {
@@ -16,7 +16,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
     if (isProcessing) return;
     setIsProcessing(true);
     try {
-      await onApprove(task);
+      await onApprove();
     } finally {
       setIsProcessing(false);
     }
@@ -26,7 +26,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
     if (isProcessing) return;
     setIsProcessing(true);
     try {
-      await onDeny(task.id);
+      await onDeny();
     } finally {
       setIsProcessing(false);
     }

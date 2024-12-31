@@ -73,11 +73,11 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
     };
   }, [open, callId, taskId]);
 
-  const handleApprove = async (task: Task) => {
+  const handleApprove = async (taskId: string) => {
     const { error } = await supabase
       .from('tasks')
       .update({ status: 'approved' })
-      .eq('id', task.id);
+      .eq('id', taskId);
 
     if (error) {
       console.error('Error approving task:', error);
@@ -107,8 +107,8 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
               <TaskReviewItem
                 key={task.id}
                 task={task}
-                onApprove={handleApprove}
-                onDeny={handleDeny}
+                onApprove={() => handleApprove(task.id)}
+                onDeny={() => handleDeny(task.id)}
               />
             ))}
           </div>
