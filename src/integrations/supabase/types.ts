@@ -60,6 +60,95 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          start_date: string | null
+          status: string
+          target_leads: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string
+          target_leads?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string
+          target_leads?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          assigned_agent: string | null
+          campaign_id: string | null
+          company: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          last_contacted: string | null
+          name: string
+          notes: string | null
+          phone_number: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_agent?: string | null
+          campaign_id?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_contacted?: string | null
+          name: string
+          notes?: string | null
+          phone_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_agent?: string | null
+          campaign_id?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          last_contacted?: string | null
+          name?: string
+          notes?: string | null
+          phone_number?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           active_status: string
