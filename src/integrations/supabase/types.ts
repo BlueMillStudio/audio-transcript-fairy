@@ -98,6 +98,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          assigned_agent: string | null
           campaign_id: string | null
           company: string | null
           created_at: string | null
@@ -111,6 +112,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          assigned_agent?: string | null
           campaign_id?: string | null
           company?: string | null
           created_at?: string | null
@@ -124,6 +126,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          assigned_agent?: string | null
           campaign_id?: string | null
           company?: string | null
           created_at?: string | null
