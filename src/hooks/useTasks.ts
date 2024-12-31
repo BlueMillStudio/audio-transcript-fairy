@@ -10,7 +10,7 @@ export const useTasks = (filters: FilterOptions, showArchived: boolean) => {
         .from("tasks")
         .select("*, calls(client_name, company_name)")
         .eq("active_status", showArchived ? "archived" : "active")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: filters.sortBy === 'oldest' });
 
       if (filters.priority) {
         query = query.eq("priority", filters.priority);

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Filter, Archive, X } from "lucide-react";
+import { Filter, Archive, X, Clock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,16 +92,52 @@ export const TasksHeader = ({
         </div>
       </div>
       
-      {/* Filter Pills */}
-      {Object.keys(filters).length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(filters).map(([key, value]) => (
+      {/* Default and Active Filter Pills */}
+      <div className="flex flex-wrap gap-2">
+        {!showArchived && (
+          <Badge
+            variant="secondary"
+            className="px-3 py-1 flex items-center gap-2"
+          >
+            <Filter className="h-3 w-3" />
+            Active
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-4 w-4 p-0 hover:bg-transparent"
+              onClick={() => setShowArchived(true)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </Badge>
+        )}
+        {filters.sortBy !== 'oldest' && (
+          <Badge
+            variant="secondary"
+            className="px-3 py-1 flex items-center gap-2"
+          >
+            <Clock className="h-3 w-3" />
+            Newest First
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-4 w-4 p-0 hover:bg-transparent"
+              onClick={() => setFilters({ ...filters, sortBy: 'oldest' })}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </Badge>
+        )}
+        {/* Other Active Filters */}
+        {Object.entries(filters).map(([key, value]) => {
+          if (key === 'sortBy') return null; // Skip sortBy filter as it's handled above
+          return (
             <Badge
               key={key}
               variant="secondary"
               className="px-3 py-1 flex items-center gap-2"
             >
-              {key}: {value}
+              {key}: {value as string}
               <Button
                 variant="ghost"
                 size="sm"
@@ -111,9 +147,9 @@ export const TasksHeader = ({
                 <X className="h-3 w-3" />
               </Button>
             </Badge>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 };
