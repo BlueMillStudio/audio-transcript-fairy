@@ -30,8 +30,13 @@ export function TaskReviewSection({
               key={task.id}
               className={cn(
                 "transform transition-all duration-300",
-                index === 0 ? "opacity-100 scale-100" : "opacity-50 scale-95"
+                index === 0 
+                  ? "translate-y-0 opacity-100 scale-100" 
+                  : `translate-y-${Math.min(index * 4, 16)} opacity-50 scale-95`
               )}
+              style={{
+                transitionDelay: `${index * 50}ms`,
+              }}
             >
               <TaskReviewItem
                 task={task}
