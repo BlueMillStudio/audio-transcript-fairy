@@ -72,11 +72,11 @@ export function CallActionDialog({
   };
 
   const handleOpenChange = (open: boolean) => {
-    // Only allow closing through the save button or explicit actions
-    if (!open && dialogState === "review") {
-      return;
-    }
-    if (open) {
+    if (!open) {
+      if (dialogState === "review" && tasks.length > 0) {
+        // Don't close if there are still tasks to review
+        return;
+      }
       setDialogState("initial");
       setTasks([]);
       setApprovedTasks([]);
@@ -176,7 +176,7 @@ export function CallActionDialog({
                 ))}
               </div>
             )}
-            {dialogState === "review" && (
+            {(tasks.length === 0 && approvedTasks.length > 0) && (
               <div className="flex justify-end mt-4 pt-4 border-t">
                 <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
                   Save Tasks
