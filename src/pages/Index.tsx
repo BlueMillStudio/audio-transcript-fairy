@@ -11,7 +11,7 @@ const Index = () => {
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-900 text-left">Dashboard</h1>
               <AudioUploader />
             </div>
             <CallsTable />
