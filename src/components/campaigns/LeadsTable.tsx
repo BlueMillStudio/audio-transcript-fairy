@@ -189,7 +189,10 @@ export const LeadsTable = ({
           <DialogHeader>
             <DialogTitle>Record Call</DialogTitle>
           </DialogHeader>
-          <AudioUploader onProcessingComplete={handleAudioProcessed} />
+          <AudioUploader 
+            onProcessingComplete={handleAudioProcessed} 
+            leadId={selectedLeadId || undefined}
+          />
         </DialogContent>
       </Dialog>
     </>
