@@ -14,7 +14,8 @@ import type { Task } from "@/types/task";
 interface CallActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAction: (action: "nothing" | "task") => void;
+  onAction: (action: "nothing" | "task") => Promise<Task[] | void>;
+  onTaskApproval: (tasks: Task[]) => Promise<void>;
 }
 
 type DialogState = "initial" | "loading" | "review";
@@ -23,18 +24,22 @@ export function CallActionDialog({
   open,
   onOpenChange,
   onAction,
+  onTaskApproval,
 }: CallActionDialogProps) {
   const [dialogState, setDialogState] = useState<DialogState>("initial");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [approvedTasks, setApprovedTasks] = useState<Set<string>>(new Set());
+  const [approvedTasks, setApprovedTasks] = useState<Task[]>([]);
   const [deniedTasks, setDeniedTasks] = useState<Set<string>>(new Set());
 
   const handleTaskAction = async (action: "nothing" | "task") => {
     if (action === "task") {
       setDialogState("loading");
       try {
-        await onAction(action);
-        setDialogState("review");
+        const generatedTasks = await onAction(action);
+        if (generatedTasks) {
+          setTasks(generatedTasks);
+          setDialogState("review");
+        }
       } catch (error) {
         console.error("Error generating tasks:", error);
         setDialogState("initial");
@@ -45,11 +50,8 @@ export function CallActionDialog({
   };
 
   const handleTaskApproval = (task: Task) => {
-    setApprovedTasks((prev) => {
-      const next = new Set(prev);
-      next.add(task.id);
-      return next;
-    });
+    setApprovedTasks((prev) => [...prev, task]);
+    setTasks((prev) => prev.filter((t) => t.id !== task.id));
   };
 
   const handleTaskDenial = (taskId: string) => {
@@ -58,23 +60,20 @@ export function CallActionDialog({
       next.add(taskId);
       return next;
     });
-  };
-
-  const allTasksHandled = () => {
-    return tasks.every(
-      (task) => approvedTasks.has(task.id) || deniedTasks.has(task.id)
-    );
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
   const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      if (tasks.length === 0 && approvedTasks.length > 0) {
+        onTaskApproval(approvedTasks);
+      }
+    }
     if (open) {
       setDialogState("initial");
       setTasks([]);
-      setApprovedTasks(new Set());
+      setApprovedTasks([]);
       setDeniedTasks(new Set());
-    }
-    if (!open && dialogState === "review" && !allTasksHandled()) {
-      return; // Prevent closing if not all tasks are handled
     }
     onOpenChange(open);
   };
@@ -138,15 +137,38 @@ export function CallActionDialog({
         )}
 
         {dialogState === "review" && (
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pt-4">
-            {tasks.map((task) => (
-              <TaskReviewItem
-                key={task.id}
-                task={task}
-                onApprove={handleTaskApproval}
-                onDeny={handleTaskDenial}
-              />
-            ))}
+          <div className="space-y-4">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+              {tasks.map((task, index) => (
+                <div
+                  key={task.id}
+                  className="transform transition-all duration-300 animate-fade-in"
+                  style={{
+                    opacity: index === 0 ? 1 : 0.5,
+                    transform: `translateY(${index * 10}px)`,
+                  }}
+                >
+                  <TaskReviewItem
+                    task={task}
+                    onApprove={handleTaskApproval}
+                    onDeny={handleTaskDenial}
+                  />
+                </div>
+              ))}
+            </div>
+            {approvedTasks.length > 0 && (
+              <div className="border-t pt-4 space-y-2">
+                <h4 className="font-medium text-sm text-gray-500">Approved Tasks</h4>
+                {approvedTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="p-2 bg-green-50 rounded-lg animate-fade-in"
+                  >
+                    <p className="text-sm text-green-800">{task.title}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

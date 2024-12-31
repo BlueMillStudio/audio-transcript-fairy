@@ -27,7 +27,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
   };
 
   return (
-    <div className="p-4 border rounded-lg space-y-4 bg-white">
+    <div className="p-4 border rounded-lg space-y-4 bg-white shadow-sm hover:shadow-md transition-shadow">
       {isEditing ? (
         <div className="space-y-4">
           <Input
@@ -113,6 +113,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           variant="default"
           size="sm"
           onClick={handleApprove}
+          className="bg-green-500 hover:bg-green-600"
         >
           Approve
         </Button>
