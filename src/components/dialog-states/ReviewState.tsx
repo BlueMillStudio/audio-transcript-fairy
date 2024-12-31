@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { TaskReviewItem } from "../TaskReviewItem";
 import type { Task } from "@/types/task";
-import { useState } from "react";
 
 interface ReviewStateProps {
   tasks: Task[];
@@ -18,27 +17,18 @@ export function ReviewState({
   onTaskDenial,
   onSave,
 }: ReviewStateProps) {
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-
-  const handleTaskApproval = (task: Task) => {
-    onTaskApproval(task);
-    setCurrentTaskIndex((prev) => Math.min(prev + 1, tasks.length - 1));
-  };
-
-  const handleTaskDenial = (taskId: string) => {
-    onTaskDenial(taskId);
-    setCurrentTaskIndex((prev) => Math.min(prev + 1, tasks.length - 1));
-  };
+  // Only show the first task in the list
+  const currentTask = tasks[0];
 
   return (
     <div className="space-y-4">
       <div className="space-y-4">
-        {tasks.length > 0 && (
+        {currentTask && (
           <div className="transform transition-all duration-300 animate-fade-in">
             <TaskReviewItem
-              task={tasks[currentTaskIndex]}
-              onApprove={handleTaskApproval}
-              onDeny={handleTaskDenial}
+              task={currentTask}
+              onApprove={onTaskApproval}
+              onDeny={onTaskDenial}
             />
           </div>
         )}
@@ -46,9 +36,9 @@ export function ReviewState({
       {approvedTasks.length > 0 && (
         <div className="border-t pt-4 space-y-2">
           <h4 className="font-medium text-sm text-gray-500">Approved Tasks</h4>
-          {approvedTasks.map((task) => (
+          {approvedTasks.map((task, index) => (
             <div
-              key={task.id}
+              key={`${task.id}-${index}`}
               className="p-2 bg-green-50 rounded-lg animate-fade-in"
             >
               <p className="text-sm text-green-800">{task.title}</p>

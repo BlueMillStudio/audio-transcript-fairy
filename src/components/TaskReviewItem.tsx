@@ -26,8 +26,8 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
   const [isEditing, setIsEditing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleApprove = async () => {
-    if (isProcessing) return;
+  const handleApprove = () => {
+    if (isProcessing) return; // Prevent multiple clicks
     setIsProcessing(true);
     
     // Remove the id and ensure status is set to pending
@@ -36,16 +36,13 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
       ...taskWithoutId,
       status: "pending"
     } as Task;
-    
     onApprove(taskToApprove);
-    setIsProcessing(false);
   };
 
   const handleDeny = () => {
     if (isProcessing) return;
     setIsProcessing(true);
     onDeny(task.id);
-    setIsProcessing(false);
   };
 
   return (
