@@ -29,14 +29,6 @@ const Tasks = () => {
         .single();
 
       if (task) {
-        // Update the task status to archived
-        const { error: updateError } = await supabase
-          .from("tasks")
-          .update({ status: "archived" })
-          .eq("id", taskId);
-
-        if (updateError) throw updateError;
-
         // Insert into archived_tasks with a new UUID
         const { error: archiveError } = await supabase
           .from("archived_tasks")
@@ -48,6 +40,14 @@ const Tasks = () => {
           });
 
         if (archiveError) throw archiveError;
+
+        // Update the original task's status to archived
+        const { error: updateError } = await supabase
+          .from("tasks")
+          .update({ status: "archived" })
+          .eq("id", taskId);
+
+        if (updateError) throw updateError;
 
         toast({
           title: "Task archived",

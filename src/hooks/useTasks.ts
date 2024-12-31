@@ -9,14 +9,11 @@ export const useTasks = (filters: FilterOptions, showArchived: boolean) => {
       let query = supabase
         .from("tasks")
         .select("*, calls(client_name, company_name)")
-        .eq("status", showArchived ? "archived" : "pending")
+        .eq("status", showArchived ? "archived" : filters.status || "pending")
         .order("created_at", { ascending: false });
 
       if (filters.priority) {
         query = query.eq("priority", filters.priority);
-      }
-      if (filters.status && !showArchived) {
-        query = query.eq("status", filters.status);
       }
       if (filters.assignee) {
         query = query.eq("assignee", filters.assignee);
