@@ -11,26 +11,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
+import { ArrowDownToLine, ArrowUpToLine, Edit } from "lucide-react";
 
 interface TaskReviewItemProps {
   task: Task;
   onApprove: (task: Task) => void;
-  onDeny: (taskId: string) => void;
+  onDeny: (task: Task) => void;
 }
 
 export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps) {
   const [editedTask, setEditedTask] = useState({
     ...task,
-    status: "pending" // Ensure we set a valid initial status
+    status: "pending",
   });
   const [isEditing, setIsEditing] = useState(false);
 
   const handleApprove = () => {
-    // Remove the id and ensure status is set to pending
     const { id, ...taskWithoutId } = editedTask;
     const taskToApprove = {
       ...taskWithoutId,
-      status: "pending"
+      status: "pending",
     } as Task;
     onApprove(taskToApprove);
   };
@@ -96,9 +96,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           <div className="flex justify-between items-center mt-2 text-sm text-gray-500">
             <span>Priority: {editedTask.priority}</span>
             {editedTask.due_date && (
-              <span>
-                Due: {format(new Date(editedTask.due_date), "MMM d, yyyy")}
-              </span>
+              <span>Due: {format(new Date(editedTask.due_date), "MMM d, yyyy")}</span>
             )}
           </div>
         </div>
@@ -109,21 +107,25 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           size="sm"
           onClick={() => setIsEditing(!isEditing)}
         >
+          <Edit className="h-4 w-4 mr-1" />
           {isEditing ? "Preview" : "Edit"}
         </Button>
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDeny(task.id)}
+          onClick={() => onDeny(task)}
+          className="gap-1"
         >
+          <ArrowUpToLine className="h-4 w-4" />
           Deny
         </Button>
         <Button
           variant="default"
           size="sm"
           onClick={handleApprove}
-          className="bg-green-500 hover:bg-green-600"
+          className="bg-green-500 hover:bg-green-600 gap-1"
         >
+          <ArrowDownToLine className="h-4 w-4" />
           Approve
         </Button>
       </div>
