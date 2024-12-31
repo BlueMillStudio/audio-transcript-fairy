@@ -17,23 +17,25 @@ export function ReviewState({
   onTaskDenial,
   onSave,
 }: ReviewStateProps) {
-  const currentTask = tasks[0]; // Get the first task in the list
-
   return (
     <div className="space-y-4">
       <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-        {currentTask && (
+        {tasks.map((task, index) => (
           <div
-            key={currentTask.id}
+            key={task.id}
             className="transform transition-all duration-300 animate-fade-in"
+            style={{
+              opacity: index === 0 ? 1 : 0.5,
+              transform: `translateY(${index * 10}px)`,
+            }}
           >
             <TaskReviewItem
-              task={currentTask}
+              task={task}
               onApprove={onTaskApproval}
               onDeny={onTaskDenial}
             />
           </div>
-        )}
+        ))}
       </div>
       {approvedTasks.length > 0 && (
         <div className="border-t pt-4 space-y-2">
