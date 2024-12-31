@@ -10,6 +10,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { DatabaseCampaign, DatabaseLead } from "@/types/database";
 import { mapDatabaseLeadToLead } from "@/types/campaign";
 
+// Using a proper UUID format
+const CAMPAIGN_ID = "123e4567-e89b-12d3-a456-426614174000";
+
 const Campaigns = () => {
   const [dateRange, setDateRange] = useState("week");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -17,30 +20,54 @@ const Campaigns = () => {
   const { toast } = useToast();
 
   // Fetch campaign data
-  const { data: campaign } = useQuery({
+  const { data: campaign, error: campaignError } = useQuery({
     queryKey: ['campaign'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('id', 'CAM001')
-        .single();
+        .eq('id', CAMPAIGN_ID)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error fetching campaign",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      if (!data) {
+        toast({
+          title: "Campaign not found",
+          description: "The requested campaign could not be found.",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       return data as DatabaseCampaign;
     },
   });
 
   // Fetch campaign stats
-  const { data: stats } = useQuery({
+  const { data: stats, error: statsError } = useQuery({
     queryKey: ['campaign-stats'],
     queryFn: async () => {
       const { data: leads, error } = await supabase
         .from('leads')
         .select('status')
-        .eq('campaign_id', 'CAM001');
+        .eq('campaign_id', CAMPAIGN_ID);
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error fetching stats",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
 
       const totalCalls = leads?.length || 0;
       const leadsContacted = leads?.filter(l => l.status !== 'not_contacted').length || 0;
@@ -59,13 +86,13 @@ const Campaigns = () => {
   });
 
   // Fetch leads data
-  const { data: leads, refetch: refetchLeads } = useQuery({
+  const { data: leads, refetch: refetchLeads, error: leadsError } = useQuery({
     queryKey: ['leads', filterStatus, dateRange, searchQuery],
     queryFn: async () => {
       let query = supabase
         .from('leads')
         .select('*')
-        .eq('campaign_id', 'CAM001');
+        .eq('campaign_id', CAMPAIGN_ID);
 
       if (filterStatus !== 'all') {
         query = query.eq('status', filterStatus);
@@ -76,7 +103,16 @@ const Campaigns = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      if (error) {
+        toast({
+          title: "Error fetching leads",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
       return (data as DatabaseLead[]).map(mapDatabaseLeadToLead);
     },
   });
@@ -184,13 +220,31 @@ const Campaigns = () => {
     setSearchQuery(value);
   };
 
+  if (campaignError || statsError || leadsError) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Campaign</h2>
+        <p className="text-gray-600">Please try refreshing the page.</p>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Campaign Not Found</h2>
+        <p className="text-gray-600">The requested campaign could not be found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <CampaignHeader
-          title={campaign?.title || "Loading..."}
-          status={campaign?.status || "active"}
-          campaignId={campaign?.id || ""}
+          title={campaign.title}
+          status={campaign.status}
+          campaignId={campaign.id}
         />
         <CampaignFilters
           dateRange={dateRange}
