@@ -17,23 +17,26 @@ export function ReviewState({
   onTaskDenial,
   onSave,
 }: ReviewStateProps) {
-  // Only show the first task in the list
-  const currentTask = tasks[0];
-
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        {currentTask && (
-          <div className="transform transition-all duration-300 animate-fade-in">
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+        {tasks.map((task, index) => (
+          <div
+            key={task.id}
+            className="transform transition-all duration-300 animate-fade-in"
+            style={{
+              opacity: index === 0 ? 1 : 0.5,
+              transform: `translateY(${index * 10}px)`,
+            }}
+          >
             <TaskReviewItem
-              task={currentTask}
+              task={task}
               onApprove={onTaskApproval}
               onDeny={onTaskDenial}
             />
           </div>
-        )}
+        ))}
       </div>
-
       {approvedTasks.length > 0 && (
         <div className="border-t pt-4 space-y-2">
           <h4 className="font-medium text-sm text-gray-500">Approved Tasks</h4>
@@ -47,7 +50,6 @@ export function ReviewState({
           ))}
         </div>
       )}
-
       {tasks.length === 0 && approvedTasks.length > 0 && (
         <div className="flex justify-end mt-4 pt-4 border-t">
           <Button onClick={onSave} className="bg-green-500 hover:bg-green-600">
