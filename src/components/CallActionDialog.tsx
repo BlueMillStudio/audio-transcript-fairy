@@ -6,12 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
-import { Check, ListTodo, Loader2, Pill, XCircle } from "lucide-react";
-import { TaskReviewItem } from "./TaskReviewItem";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import type { Task } from "@/types/task";
-import { cn } from "@/lib/utils";
+import { InitialActionCards } from "./dialog/InitialActionCards";
+import { TaskReviewSection } from "./dialog/TaskReviewSection";
 
 interface CallActionDialogProps {
   open: boolean;
@@ -102,32 +100,7 @@ export function CallActionDialog({
         </DialogHeader>
 
         {dialogState === "initial" && (
-          <div className="grid grid-cols-2 gap-4 pt-4">
-            <Card
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => handleTaskAction("nothing")}
-            >
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="p-2 rounded-full bg-green-100">
-                  <Check className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="font-medium">Do Nothing</h3>
-                <p className="text-sm text-gray-500">Save the call as is</p>
-              </div>
-            </Card>
-            <Card
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => handleTaskAction("task")}
-            >
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="p-2 rounded-full bg-blue-100">
-                  <ListTodo className="h-6 w-6 text-blue-600" />
-                </div>
-                <h3 className="font-medium">Create Tasks</h3>
-                <p className="text-sm text-gray-500">Generate tasks from call</p>
-              </div>
-            </Card>
-          </div>
+          <InitialActionCards onAction={handleTaskAction} />
         )}
 
         {dialogState === "loading" && (
@@ -140,71 +113,14 @@ export function CallActionDialog({
         )}
 
         {dialogState === "review" && (
-          <div className="space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="w-2/3 space-y-4 max-h-[60vh] overflow-y-auto pr-4">
-                {tasks.map((task, index) => (
-                  <div
-                    key={task.id}
-                    className={cn(
-                      "transform transition-all duration-300",
-                      index === 0 ? "opacity-100" : "opacity-50"
-                    )}
-                    style={{
-                      transform: `translateY(${index * 10}px)`,
-                    }}
-                  >
-                    <TaskReviewItem
-                      task={task}
-                      onApprove={handleTaskApproval}
-                      onDeny={handleTaskDenial}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="w-1/3 space-y-4">
-                {approvedTasks.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-gray-500">Approved</h4>
-                    <div className="space-y-2">
-                      {approvedTasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className="flex items-center gap-2 p-2 bg-green-50 text-green-800 rounded-full animate-fade-in"
-                        >
-                          <Pill className="h-4 w-4" />
-                          <span className="text-sm truncate">{task.title}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {deniedTasks.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm text-gray-500">Denied</h4>
-                    <div className="space-y-2">
-                      {deniedTasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className="flex items-center gap-2 p-2 bg-red-50 text-red-800 rounded-full animate-fade-in"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          <span className="text-sm truncate">{task.title}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            {tasks.length === 0 && approvedTasks.length > 0 && (
-              <div className="flex justify-end mt-4 pt-4 border-t">
-                <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
-                  Save Tasks
-                </Button>
-              </div>
-            )}
-          </div>
+          <TaskReviewSection
+            tasks={tasks}
+            approvedTasks={approvedTasks}
+            deniedTasks={deniedTasks}
+            onTaskApproval={handleTaskApproval}
+            onTaskDenial={handleTaskDenial}
+            onSave={handleSave}
+          />
         )}
       </DialogContent>
     </Dialog>

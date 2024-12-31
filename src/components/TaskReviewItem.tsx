@@ -17,9 +17,10 @@ interface TaskReviewItemProps {
   task: Task;
   onApprove: (task: Task) => void;
   onDeny: (task: Task) => void;
+  isActive: boolean;
 }
 
-export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps) {
+export function TaskReviewItem({ task, onApprove, onDeny, isActive }: TaskReviewItemProps) {
   const [editedTask, setEditedTask] = useState({
     ...task,
     status: "pending",
@@ -28,6 +29,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleApprove = () => {
+    if (!isActive) return;
     setIsTransitioning(true);
     const { id, ...taskWithoutId } = editedTask;
     const taskToApprove = {
@@ -35,13 +37,13 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
       status: "pending",
     } as Task;
     
-    // Add a small delay to allow for transition animation
     setTimeout(() => {
       onApprove(taskToApprove);
     }, 300);
   };
 
   const handleDeny = () => {
+    if (!isActive) return;
     setIsTransitioning(true);
     setTimeout(() => {
       onDeny(task);
@@ -50,8 +52,10 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
 
   return (
     <div 
-      className={`p-4 border rounded-lg space-y-4 bg-white shadow-sm hover:shadow-md transition-all duration-300 ${
+      className={`p-4 border rounded-lg space-y-4 bg-white shadow-sm transition-all duration-300 ${
         isTransitioning ? 'opacity-0 transform translate-x-full' : ''
+      } ${
+        isActive ? 'hover:shadow-md scale-100' : 'scale-95 opacity-50'
       }`}
     >
       {isEditing ? (
@@ -122,7 +126,8 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => isActive && setIsEditing(!isEditing)}
+          disabled={!isActive}
         >
           <Edit className="h-4 w-4 mr-1" />
           {isEditing ? "Preview" : "Edit"}
@@ -132,6 +137,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           size="sm"
           onClick={handleDeny}
           className="gap-1"
+          disabled={!isActive}
         >
           <ArrowUpToLine className="h-4 w-4" />
           Deny
@@ -141,6 +147,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           size="sm"
           onClick={handleApprove}
           className="bg-green-500 hover:bg-green-600 gap-1"
+          disabled={!isActive}
         >
           <ArrowDownToLine className="h-4 w-4" />
           Approve
