@@ -48,7 +48,7 @@ export function CallActionDialog({
         setDialogState("initial");
       }
     } else {
-      onAction(action);
+      await onAction(action);
     }
   };
 
@@ -70,17 +70,23 @@ export function CallActionDialog({
     if (approvedTasks.length > 0) {
       await onTaskApproval(approvedTasks);
     }
-    handleOpenChange(false);
+    // Only reset and close after successful save
+    resetDialogState();
+    onOpenChange(false);
+  };
+
+  const resetDialogState = () => {
+    setDialogState("initial");
+    setTasks([]);
+    setApprovedTasks([]);
+    setDeniedTasks(new Set());
+    setTotalTasks(0);
   };
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       // Only reset states when explicitly closing the dialog
-      setDialogState("initial");
-      setTasks([]);
-      setApprovedTasks([]);
-      setDeniedTasks(new Set());
-      setTotalTasks(0);
+      resetDialogState();
     }
     onOpenChange(open);
   };
