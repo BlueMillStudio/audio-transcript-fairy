@@ -25,14 +25,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useState } from "react";
-import type { DatabaseLead } from "@/types/database";
+import type { Lead } from "@/types/campaign";
 
 interface LeadsTableProps {
-  leads: DatabaseLead[];
+  leads: Lead[];
   onCallNow: (leadId: string) => void;
   onScheduleFollowUp: (leadId: string) => void;
   onMarkCompleted: (leadId: string) => void;
-  onUpdateStatus: (leadId: string, status: DatabaseLead['status']) => void;
+  onUpdateStatus: (leadId: string, status: Lead['status']) => void;
 }
 
 export const LeadsTable = ({
@@ -84,8 +84,8 @@ export const LeadsTable = ({
                     : 'Never'}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className={getStatusColor(lead.status || '')}>
-                    {getStatusLabel(lead.status || 'not_contacted')}
+                  <Badge variant="secondary" className={getStatusColor(lead.status)}>
+                    {getStatusLabel(lead.status)}
                   </Badge>
                 </TableCell>
                 <TableCell>

@@ -6,22 +6,28 @@ export interface Campaign extends Omit<DatabaseCampaign, 'status'> {
 
 export interface Lead {
   id: string;
+  campaign_id: string | null;
   name: string;
-  company: string;
-  phoneNumber: string;
-  lastContacted: Date | null;
+  company: string | null;
+  phone_number: string | null;
+  email: string | null;
   status: 'not_contacted' | 'interested' | 'not_interested' | 'follow_up' | 'closed';
-  assignedAgent: string;
-  notes: string;
+  last_contacted: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export const mapDatabaseLeadToLead = (dbLead: DatabaseLead): Lead => ({
   id: dbLead.id,
+  campaign_id: dbLead.campaign_id,
   name: dbLead.name,
-  company: dbLead.company || '',
-  phoneNumber: dbLead.phone_number || '',
-  lastContacted: dbLead.last_contacted ? new Date(dbLead.last_contacted) : null,
+  company: dbLead.company,
+  phone_number: dbLead.phone_number,
+  email: dbLead.email,
   status: (dbLead.status || 'not_contacted') as Lead['status'],
-  assignedAgent: dbLead.assigned_agent || '',
-  notes: dbLead.notes || '',
+  last_contacted: dbLead.last_contacted,
+  notes: dbLead.notes,
+  created_at: dbLead.created_at,
+  updated_at: dbLead.updated_at
 });
