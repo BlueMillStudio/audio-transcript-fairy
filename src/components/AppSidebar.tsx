@@ -3,11 +3,18 @@ import { MainNavigation } from "./sidebar/MainNavigation";
 import { RecentItems } from "./sidebar/RecentItems";
 import { useState } from "react";
 
+type RecentItem = {
+  id: string;
+  type: string;
+  title: string;
+  subtitle?: string;
+};
+
 export function AppSidebar() {
-  const [recentItems, setRecentItems] = useState([
-    { id: "1", name: "Item 1" },
-    { id: "2", name: "Item 2" },
-    { id: "3", name: "Item 3" },
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([
+    { id: "1", type: "call", title: "Item 1" },
+    { id: "2", type: "call", title: "Item 2" },
+    { id: "3", type: "call", title: "Item 3" },
   ]);
 
   const handleRemoveItem = (itemId: string) => {
@@ -15,7 +22,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset">
       <SidebarContent>
         <MainNavigation />
         {recentItems.length > 0 && (
