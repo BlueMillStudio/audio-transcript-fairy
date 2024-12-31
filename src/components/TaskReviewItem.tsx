@@ -21,28 +21,22 @@ interface TaskReviewItemProps {
 export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps) {
   const [editedTask, setEditedTask] = useState({
     ...task,
-    status: "pending" // Ensure we set a valid initial status
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleApprove = () => {
-    if (isProcessing) return; // Prevent multiple clicks
+    if (isProcessing) return;
     setIsProcessing(true);
-    
-    // Remove the id and ensure status is set to pending
-    const { id, ...taskWithoutId } = editedTask;
-    const taskToApprove = {
-      ...taskWithoutId,
-      status: "pending"
-    } as Task;
-    onApprove(taskToApprove);
+    onApprove(editedTask);
+    setIsProcessing(false);
   };
 
   const handleDeny = () => {
     if (isProcessing) return;
     setIsProcessing(true);
     onDeny(task.id);
+    setIsProcessing(false);
   };
 
   return (

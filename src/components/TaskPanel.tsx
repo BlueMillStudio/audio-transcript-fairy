@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { TaskReviewItem } from "./TaskReviewItem";
 
 type Task = Database['public']['Tables']['tasks']['Row'];
 
@@ -74,29 +75,25 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
     };
   }, [open, callId, taskId]);
 
-  const getPriorityColor = (priority: string | null) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleApprove = async (task: Task) => {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'approved' })
+      .eq('id', task.id);
+
+    if (error) {
+      console.error('Error approving task:', error);
     }
   };
 
-  const getStatusColor = (status: string | null) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleDeny = async (taskId: string) => {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'denied' })
+      .eq('id', taskId);
+
+    if (error) {
+      console.error('Error denying task:', error);
     }
   };
 
@@ -109,35 +106,12 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
         <ScrollArea className="h-[calc(100vh-100px)] pr-4">
           <div className="space-y-4 mt-4">
             {tasks.map((task) => (
-              <div
+              <TaskReviewItem
                 key={task.id}
-                className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm"
-              >
-                <div className="flex items-start justify-between">
-                  <h3 className="font-semibold">{task.title}</h3>
-                  <div className="flex gap-2">
-                    <Badge variant="secondary" className={getPriorityColor(task.priority)}>
-                      {task.priority}
-                    </Badge>
-                    <Badge variant="secondary" className={getStatusColor(task.status)}>
-                      {task.status}
-                    </Badge>
-                  </div>
-                </div>
-                {task.description && (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {task.description}
-                  </p>
-                )}
-                <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Assigned to: {task.assignee || 'Unassigned'}</span>
-                  {task.due_date && (
-                    <span>
-                      Due: {format(new Date(task.due_date), 'MMM d, yyyy')}
-                    </span>
-                  )}
-                </div>
-              </div>
+                task={task}
+                onApprove={handleApprove}
+                onDeny={handleDeny}
+              />
             ))}
           </div>
         </ScrollArea>
