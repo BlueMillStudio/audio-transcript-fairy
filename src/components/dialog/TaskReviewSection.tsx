@@ -25,29 +25,27 @@ export function TaskReviewSection({
     <div className="space-y-4">
       <div className="flex justify-between items-start">
         <div className="w-2/3 space-y-4 max-h-[60vh] overflow-y-auto pr-4">
-          <div className="relative">
-            {tasks.map((task, index) => (
-              <div
-                key={task.id}
-                className={cn(
-                  "transform transition-all duration-300 absolute w-full",
-                  index === 0 
-                    ? "top-0 opacity-100 scale-100 z-20" 
-                    : `top-${Math.min((index) * 16, 48)} opacity-50 scale-95 z-10`
-                )}
-                style={{
-                  transform: `translateY(${index * 4}rem)`,
-                }}
-              >
-                <TaskReviewItem
-                  task={task}
-                  onApprove={onTaskApproval}
-                  onDeny={onTaskDenial}
-                  isActive={index === 0}
-                />
-              </div>
-            ))}
-          </div>
+          {tasks.map((task, index) => (
+            <div
+              key={task.id}
+              className={cn(
+                "transform transition-all duration-300",
+                index === 0 
+                  ? "translate-y-0 opacity-100 scale-100" 
+                  : `translate-y-${Math.min(index * 4, 16)} opacity-50 scale-95`
+              )}
+              style={{
+                transitionDelay: `${index * 50}ms`,
+              }}
+            >
+              <TaskReviewItem
+                task={task}
+                onApprove={onTaskApproval}
+                onDeny={onTaskDenial}
+                isActive={index === 0}
+              />
+            </div>
+          ))}
         </div>
         <div className="w-1/3 space-y-4">
           {approvedTasks.length > 0 && (
