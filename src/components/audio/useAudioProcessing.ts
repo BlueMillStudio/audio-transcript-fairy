@@ -7,6 +7,7 @@ export function useAudioProcessing() {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [processedCallData, setProcessedCallData] = useState<any>(null);
 
   const processAudioFile = async (file: File) => {
@@ -80,6 +81,8 @@ export function useAudioProcessing() {
     isUploading,
     showActionDialog,
     setShowActionDialog,
+    showUploadDialog,
+    setShowUploadDialog,
     processedCallData,
     processAudioFile,
   };

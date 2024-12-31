@@ -5,6 +5,7 @@ import { CallActionDialog } from "./CallActionDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Task } from "@/types/task";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface AudioUploaderProps {
   onProcessingComplete?: () => void;
@@ -18,6 +19,8 @@ export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
     setShowActionDialog,
     processedCallData,
     processAudioFile,
+    showUploadDialog,
+    setShowUploadDialog
   } = useAudioProcessing();
 
   const handleCallAction = async (action: "nothing" | "task") => {
@@ -96,10 +99,21 @@ export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
       <div className="flex items-center gap-4">
         <AudioButton
           isUploading={isUploading}
-          onClick={() => document.getElementById("audio-input")?.click()}
+          onClick={() => setShowUploadDialog(true)}
         />
         <AudioInput onFileChange={processAudioFile} />
       </div>
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Audio</DialogTitle>
+          </DialogHeader>
+          <AudioInput onFileChange={(file) => {
+            processAudioFile(file);
+            setShowUploadDialog(false);
+          }} />
+        </DialogContent>
+      </Dialog>
       <CallActionDialog
         open={showActionDialog}
         onOpenChange={setShowActionDialog}
