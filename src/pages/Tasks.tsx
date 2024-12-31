@@ -21,7 +21,6 @@ const Tasks = () => {
 
   const handleArchiveTask = async (taskId: string) => {
     try {
-      // First, get the task data
       const { data: task } = await supabase
         .from("tasks")
         .select("*")
@@ -29,19 +28,7 @@ const Tasks = () => {
         .single();
 
       if (task) {
-        // Insert into archived_tasks with a new UUID
-        const { error: archiveError } = await supabase
-          .from("archived_tasks")
-          .insert({
-            ...task,
-            id: undefined, // Let Supabase generate a new UUID
-            original_task_id: task.id,
-            archived_at: new Date().toISOString(),
-          });
-
-        if (archiveError) throw archiveError;
-
-        // Update the original task's status to archived
+        // Update the task status to 'archived'
         const { error: updateError } = await supabase
           .from("tasks")
           .update({ status: "archived" })
@@ -51,7 +38,7 @@ const Tasks = () => {
 
         toast({
           title: "Task archived",
-          description: "The task has been moved to the archive.",
+          description: "The task has been archived successfully.",
         });
         
         refetch();
