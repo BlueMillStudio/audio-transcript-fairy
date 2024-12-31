@@ -25,18 +25,35 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
     status: "pending",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleApprove = () => {
+    setIsTransitioning(true);
     const { id, ...taskWithoutId } = editedTask;
     const taskToApprove = {
       ...taskWithoutId,
       status: "pending",
     } as Task;
-    onApprove(taskToApprove);
+    
+    // Add a small delay to allow for transition animation
+    setTimeout(() => {
+      onApprove(taskToApprove);
+    }, 300);
+  };
+
+  const handleDeny = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      onDeny(task);
+    }, 300);
   };
 
   return (
-    <div className="p-4 border rounded-lg space-y-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div 
+      className={`p-4 border rounded-lg space-y-4 bg-white shadow-sm hover:shadow-md transition-all duration-300 ${
+        isTransitioning ? 'opacity-0 transform translate-x-full' : ''
+      }`}
+    >
       {isEditing ? (
         <div className="space-y-4">
           <Input
@@ -113,7 +130,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDeny(task)}
+          onClick={handleDeny}
           className="gap-1"
         >
           <ArrowUpToLine className="h-4 w-4" />
