@@ -27,8 +27,8 @@ export function ReviewState({
           <div className="transform transition-all duration-300 animate-fade-in">
             <TaskReviewItem
               task={currentTask}
-              onApprove={onTaskApproval}
-              onDeny={onTaskDenial}
+              onApprove={() => onTaskApproval(currentTask)}
+              onDeny={() => onTaskDenial(currentTask.id)}
             />
           </div>
         )}
