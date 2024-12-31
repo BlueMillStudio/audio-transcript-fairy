@@ -24,15 +24,28 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
     status: "pending" // Ensure we set a valid initial status
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    
     // Remove the id and ensure status is set to pending
     const { id, ...taskWithoutId } = editedTask;
     const taskToApprove = {
       ...taskWithoutId,
       status: "pending"
     } as Task;
+    
     onApprove(taskToApprove);
+    setIsProcessing(false);
+  };
+
+  const handleDeny = () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    onDeny(task.id);
+    setIsProcessing(false);
   };
 
   return (
@@ -108,13 +121,15 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           variant="outline"
           size="sm"
           onClick={() => setIsEditing(!isEditing)}
+          disabled={isProcessing}
         >
           {isEditing ? "Preview" : "Edit"}
         </Button>
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => onDeny(task.id)}
+          onClick={handleDeny}
+          disabled={isProcessing}
         >
           Deny
         </Button>
@@ -122,6 +137,7 @@ export function TaskReviewItem({ task, onApprove, onDeny }: TaskReviewItemProps)
           variant="default"
           size="sm"
           onClick={handleApprove}
+          disabled={isProcessing}
           className="bg-green-500 hover:bg-green-600"
         >
           Approve
