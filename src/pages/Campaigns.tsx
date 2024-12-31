@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { LeadsTable } from "@/components/campaigns/LeadsTable";
 import {
   PhoneCall,
   Users,
@@ -27,6 +28,46 @@ const Campaigns = () => {
     followUps: 30,
     droppedCalls: 5,
     avgDuration: "8m 30s",
+  };
+
+  // Placeholder leads data
+  const leads = [
+    {
+      id: "1",
+      name: "John Doe",
+      company: "Tech Corp",
+      phoneNumber: "+1 234 567 8900",
+      lastContacted: new Date("2024-03-01"),
+      status: "not_contacted" as const,
+      assignedAgent: "Sarah Smith",
+      notes: "Initial contact made",
+    },
+    {
+      id: "2",
+      name: "Jane Smith",
+      company: "Digital Solutions",
+      phoneNumber: "+1 234 567 8901",
+      lastContacted: new Date("2024-03-05"),
+      status: "interested" as const,
+      assignedAgent: "Mike Johnson",
+      notes: "Showed interest in product demo",
+    },
+  ];
+
+  const handleCallNow = (leadId: string) => {
+    console.log("Calling lead:", leadId);
+  };
+
+  const handleScheduleFollowUp = (leadId: string) => {
+    console.log("Scheduling follow-up for lead:", leadId);
+  };
+
+  const handleMarkCompleted = (leadId: string) => {
+    console.log("Marking lead as completed:", leadId);
+  };
+
+  const handleUpdateStatus = (leadId: string, status: string) => {
+    console.log("Updating lead status:", leadId, status);
   };
 
   const StatCard = ({ icon: Icon, title, value, className = "" }) => (
@@ -134,10 +175,14 @@ const Campaigns = () => {
         </Button>
       </div>
 
-      {/* Placeholder for future sections */}
-      <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-        More sections coming soon...
-      </div>
+      {/* Leads Table */}
+      <LeadsTable
+        leads={leads}
+        onCallNow={handleCallNow}
+        onScheduleFollowUp={handleScheduleFollowUp}
+        onMarkCompleted={handleMarkCompleted}
+        onUpdateStatus={handleUpdateStatus}
+      />
     </div>
   );
 };
