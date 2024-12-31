@@ -5,12 +5,14 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { CallActionDialog } from "./CallActionDialog";
 import type { Database } from "@/integrations/supabase/types";
+import type { Task } from "@/types/task";
 
 export function AudioUploader() {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
   const [processedCallData, setProcessedCallData] = useState<any>(null);
+  const [generatedTasks, setGeneratedTasks] = useState<Task[]>([]);
 
   const handleCallAction = async (action: "nothing" | "task") => {
     if (!processedCallData) return;
@@ -36,16 +38,16 @@ export function AudioUploader() {
           });
 
         if (tasksError) throw tasksError;
-
-        toast({
-          title: "Tasks Generated",
-          description: `${tasksData.tasks.length} tasks have been created from this call.`,
-        });
+        
+        setGeneratedTasks(tasksData.tasks);
+        return tasksData.tasks;
       } else {
         toast({
           title: "Success",
           description: "Call processed and saved successfully!",
         });
+        setShowActionDialog(false);
+        setProcessedCallData(null);
       }
     } catch (error) {
       console.error("Error processing:", error);
@@ -54,10 +56,34 @@ export function AudioUploader() {
         description: "Failed to process the call. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      // Reset state
       setShowActionDialog(false);
       setProcessedCallData(null);
+    }
+  };
+
+  const handleTaskApproval = async (approvedTasks: Task[]) => {
+    try {
+      const { error: insertError } = await supabase
+        .from('tasks')
+        .insert(approvedTasks);
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Tasks Created",
+        description: `${approvedTasks.length} tasks have been created from this call.`,
+      });
+    } catch (error) {
+      console.error("Error saving tasks:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save tasks. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowActionDialog(false);
+      setProcessedCallData(null);
+      setGeneratedTasks([]);
     }
   };
 
