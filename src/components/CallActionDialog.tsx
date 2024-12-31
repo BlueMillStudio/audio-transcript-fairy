@@ -176,7 +176,7 @@ export function CallActionDialog({
                 ))}
               </div>
             )}
-            {dialogState === "review" && (
+            {(tasks.length === 0 && approvedTasks.length > 0) && (
               <div className="flex justify-end mt-4 pt-4 border-t">
                 <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
                   Save Tasks
