@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import type { Lead } from "@/types/campaign";
+import { mapDatabaseLeadToLead } from "@/types/campaign";
 
 const COLUMNS = [
   { id: 'new', title: 'New', color: 'bg-gray-100' },
@@ -30,10 +31,10 @@ export function KanbanBoard() {
       return;
     }
 
-    setLeads(data || []);
+    setLeads(data ? data.map(mapDatabaseLeadToLead) : []);
   };
 
-  const getLeadsByStatus = (status: string) => {
+  const getLeadsByStatus = (status: Lead['status']) => {
     return leads.filter(lead => lead.status === status);
   };
 
@@ -46,13 +47,13 @@ export function KanbanBoard() {
               <CardTitle className="text-sm font-medium">
                 {column.title}
                 <Badge variant="secondary" className="ml-2">
-                  {getLeadsByStatus(column.id).length}
+                  {getLeadsByStatus(column.id as Lead['status']).length}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="overflow-y-auto h-full">
               <div className="space-y-2">
-                {getLeadsByStatus(column.id).map(lead => (
+                {getLeadsByStatus(column.id as Lead['status']).map(lead => (
                   <Card key={lead.id} className="p-3">
                     <div className="font-medium">{lead.name}</div>
                     <div className="text-sm text-muted-foreground">

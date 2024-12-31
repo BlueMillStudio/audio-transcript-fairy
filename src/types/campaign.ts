@@ -11,7 +11,7 @@ export interface Lead {
   company: string | null;
   phone_number: string | null;
   email: string | null;
-  status: 'not_contacted' | 'interested' | 'not_interested' | 'follow_up' | 'closed';
+  status: 'new' | 'talking' | 'meeting' | 'proposal' | 'closed';
   last_contacted: string | null;
   notes: string | null;
   created_at: string;
@@ -25,7 +25,7 @@ export const mapDatabaseLeadToLead = (dbLead: DatabaseLead): Lead => ({
   company: dbLead.company,
   phone_number: dbLead.phone_number,
   email: dbLead.email,
-  status: (dbLead.status || 'not_contacted') as Lead['status'],
+  status: (dbLead.status || 'new') as Lead['status'],
   last_contacted: dbLead.last_contacted,
   notes: dbLead.notes,
   created_at: dbLead.created_at,

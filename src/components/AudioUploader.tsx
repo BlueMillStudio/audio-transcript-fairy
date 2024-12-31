@@ -173,7 +173,7 @@ export function AudioUploader({ onComplete, triggerComponent }: AudioUploaderPro
             <Button onClick={() => handleActionSelection('proposal')} variant="secondary">
               Create Proposal
             </Button>
-            <Button onClick={() => handleActionSelection('closed')} variant="success">
+            <Button onClick={() => handleActionSelection('closed')} variant="secondary">
               Mark as Closed
             </Button>
             <Button onClick={() => handleActionSelection('none')} variant="ghost">
