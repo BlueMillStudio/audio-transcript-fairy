@@ -33,6 +33,7 @@ interface Lead {
   phoneNumber: string;
   lastContacted: Date | null;
   status: 'not_contacted' | 'interested' | 'not_interested' | 'follow_up' | 'closed';
+  assignedAgent: string;
   notes: string;
 }
 
@@ -80,10 +81,6 @@ export const LeadsTable = ({
     setShowCallDialog(true);
   };
 
-  const handleAudioProcessed = () => {
-    setShowCallDialog(false);
-  };
-
   return (
     <>
       <div className="rounded-md border">
@@ -95,6 +92,7 @@ export const LeadsTable = ({
               <TableHead>Phone Number</TableHead>
               <TableHead>Last Contacted</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Assigned Agent</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -114,6 +112,7 @@ export const LeadsTable = ({
                     {getStatusLabel(lead.status)}
                   </Badge>
                 </TableCell>
+                <TableCell>{lead.assignedAgent}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Button
@@ -189,7 +188,7 @@ export const LeadsTable = ({
           <DialogHeader>
             <DialogTitle>Record Call</DialogTitle>
           </DialogHeader>
-          <AudioUploader onProcessingComplete={handleAudioProcessed} />
+          <AudioUploader />
         </DialogContent>
       </Dialog>
     </>

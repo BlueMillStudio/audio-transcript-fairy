@@ -31,7 +31,6 @@ export function CallActionDialog({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [approvedTasks, setApprovedTasks] = useState<Task[]>([]);
   const [deniedTasks, setDeniedTasks] = useState<Set<string>>(new Set());
-  const [totalTasks, setTotalTasks] = useState<number>(0);
 
   const handleTaskAction = async (action: "nothing" | "task") => {
     if (action === "task") {
@@ -40,7 +39,6 @@ export function CallActionDialog({
         const generatedTasks = await onAction(action);
         if (generatedTasks) {
           setTasks(generatedTasks);
-          setTotalTasks(generatedTasks.length);
           setDialogState("review");
         }
       } catch (error) {
@@ -48,7 +46,7 @@ export function CallActionDialog({
         setDialogState("initial");
       }
     } else {
-      await onAction(action);
+      onAction(action);
     }
   };
 
@@ -70,28 +68,22 @@ export function CallActionDialog({
     if (approvedTasks.length > 0) {
       await onTaskApproval(approvedTasks);
     }
-    // Only reset and close after successful save
-    resetDialogState();
     onOpenChange(false);
   };
 
-  const resetDialogState = () => {
-    setDialogState("initial");
-    setTasks([]);
-    setApprovedTasks([]);
-    setDeniedTasks(new Set());
-    setTotalTasks(0);
-  };
-
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      // Only reset states when explicitly closing the dialog
-      resetDialogState();
+    // Only allow closing through the save button or explicit actions
+    if (!open && dialogState === "review") {
+      return;
+    }
+    if (open) {
+      setDialogState("initial");
+      setTasks([]);
+      setApprovedTasks([]);
+      setDeniedTasks(new Set());
     }
     onOpenChange(open);
   };
-
-  const allTasksReviewed = tasks.length === 0 && (approvedTasks.length + deniedTasks.size === totalTasks);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -186,11 +178,7 @@ export function CallActionDialog({
             )}
             {dialogState === "review" && (
               <div className="flex justify-end mt-4 pt-4 border-t">
-                <Button 
-                  onClick={handleSave} 
-                  className="bg-green-500 hover:bg-green-600"
-                  disabled={!allTasksReviewed}
-                >
+                <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
                   Save Tasks
                 </Button>
               </div>

@@ -6,11 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Task } from "@/types/task";
 
-interface AudioUploaderProps {
-  onProcessingComplete?: () => void;
-}
-
-export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
+export function AudioUploader() {
   const { toast } = useToast();
   const {
     isUploading,
@@ -45,7 +41,6 @@ export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
 
         if (tasksError) throw tasksError;
         
-        onProcessingComplete?.();
         return tasksData.tasks;
       } else {
         toast({
@@ -53,7 +48,6 @@ export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
           description: "Call processed and saved successfully!",
         });
         setShowActionDialog(false);
-        onProcessingComplete?.();
       }
     } catch (error) {
       console.error("Error processing:", error);
@@ -87,7 +81,6 @@ export function AudioUploader({ onProcessingComplete }: AudioUploaderProps) {
       });
     } finally {
       setShowActionDialog(false);
-      onProcessingComplete?.();
     }
   };
 
