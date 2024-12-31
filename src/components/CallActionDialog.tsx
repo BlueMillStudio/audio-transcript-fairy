@@ -6,11 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
-import { Check, ListTodo, Loader2 } from "lucide-react";
-import { TaskReviewItem } from "./TaskReviewItem";
-import { Button } from "@/components/ui/button";
 import type { Task } from "@/types/task";
+import { InitialActionState } from "./dialog-states/InitialActionState";
+import { LoadingState } from "./dialog-states/LoadingState";
+import { ReviewState } from "./dialog-states/ReviewState";
 
 interface CallActionDialogProps {
   open: boolean;
@@ -85,105 +84,50 @@ export function CallActionDialog({
     onOpenChange(open);
   };
 
+  const getDialogTitle = () => {
+    switch (dialogState) {
+      case "initial":
+        return "Choose Next Action";
+      case "loading":
+        return "Generating Tasks";
+      case "review":
+        return "Review Generated Tasks";
+    }
+  };
+
+  const getDialogDescription = () => {
+    switch (dialogState) {
+      case "initial":
+        return "What would you like to do with this call?";
+      case "loading":
+        return "Please wait while we analyze the call and generate tasks...";
+      case "review":
+        return "Review and approve or deny the generated tasks";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {dialogState === "initial"
-              ? "Choose Next Action"
-              : dialogState === "loading"
-              ? "Generating Tasks"
-              : "Review Generated Tasks"}
-          </DialogTitle>
-          <DialogDescription>
-            {dialogState === "initial"
-              ? "What would you like to do with this call?"
-              : dialogState === "loading"
-              ? "Please wait while we analyze the call and generate tasks..."
-              : "Review and approve or deny the generated tasks"}
-          </DialogDescription>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
+          <DialogDescription>{getDialogDescription()}</DialogDescription>
         </DialogHeader>
 
         {dialogState === "initial" && (
-          <div className="grid grid-cols-2 gap-4 pt-4">
-            <Card
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => handleTaskAction("nothing")}
-            >
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="p-2 rounded-full bg-green-100">
-                  <Check className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="font-medium">Do Nothing</h3>
-                <p className="text-sm text-gray-500">Save the call as is</p>
-              </div>
-            </Card>
-            <Card
-              className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => handleTaskAction("task")}
-            >
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="p-2 rounded-full bg-blue-100">
-                  <ListTodo className="h-6 w-6 text-blue-600" />
-                </div>
-                <h3 className="font-medium">Create Tasks</h3>
-                <p className="text-sm text-gray-500">Generate tasks from call</p>
-              </div>
-            </Card>
-          </div>
+          <InitialActionState onAction={handleTaskAction} />
         )}
 
-        {dialogState === "loading" && (
-          <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-4 text-sm text-gray-500">
-              Analyzing call and generating tasks...
-            </p>
-          </div>
-        )}
+        {dialogState === "loading" && <LoadingState />}
 
         {dialogState === "review" && (
-          <div className="space-y-4">
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {tasks.map((task, index) => (
-                <div
-                  key={task.id}
-                  className="transform transition-all duration-300 animate-fade-in"
-                  style={{
-                    opacity: index === 0 ? 1 : 0.5,
-                    transform: `translateY(${index * 10}px)`,
-                  }}
-                >
-                  <TaskReviewItem
-                    task={task}
-                    onApprove={handleTaskApproval}
-                    onDeny={handleTaskDenial}
-                  />
-                </div>
-              ))}
-            </div>
-            {approvedTasks.length > 0 && (
-              <div className="border-t pt-4 space-y-2">
-                <h4 className="font-medium text-sm text-gray-500">Approved Tasks</h4>
-                {approvedTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="p-2 bg-green-50 rounded-lg animate-fade-in"
-                  >
-                    <p className="text-sm text-green-800">{task.title}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-            {(tasks.length === 0 && approvedTasks.length > 0) && (
-              <div className="flex justify-end mt-4 pt-4 border-t">
-                <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
-                  Save Tasks
-                </Button>
-              </div>
-            )}
-          </div>
+          <ReviewState
+            tasks={tasks}
+            approvedTasks={approvedTasks}
+            onTaskApproval={handleTaskApproval}
+            onTaskDenial={handleTaskDenial}
+            onSave={handleSave}
+          />
         )}
       </DialogContent>
     </Dialog>
