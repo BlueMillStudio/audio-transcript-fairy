@@ -59,7 +59,12 @@ export const LeadsTable = ({
                   : 'Never'}
               </TableCell>
               <TableCell>
-                <Badge variant="secondary" className={getStatusColor(lead.status)}>
+                <Badge 
+                  variant="secondary" 
+                  className={lead.status === 'CLOSED DEAL' 
+                    ? 'bg-green-100 text-green-800' 
+                    : getStatusColor(lead.status)}
+                >
                   {getStatusLabel(lead.status)}
                 </Badge>
               </TableCell>
@@ -139,27 +144,4 @@ export const LeadsTable = ({
       </Table>
     </div>
   );
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'new':
-      return 'bg-gray-100 text-gray-800';
-    case 'talking':
-      return 'bg-blue-100 text-blue-800';
-    case 'meeting':
-      return 'bg-purple-100 text-purple-800';
-    case 'proposal':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'closed':
-      return 'bg-green-100 text-green-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
-
-const getStatusLabel = (status: string) => {
-  return status.split('_').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
 };

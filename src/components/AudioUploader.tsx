@@ -107,6 +107,8 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
           title: "Deal Closed! 🎊",
           description: "Congratulations on closing the deal!",
         });
+        
+        setShowActionDialog(false);
       }
 
       if (action === 'proposal') {
