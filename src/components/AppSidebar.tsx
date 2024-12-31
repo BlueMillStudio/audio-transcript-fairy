@@ -3,9 +3,10 @@ import { MainNavigation } from "./sidebar/MainNavigation";
 import { RecentItems } from "./sidebar/RecentItems";
 import { useState } from "react";
 
+// Import the type from RecentItems to ensure consistency
 type RecentItem = {
   id: string;
-  type: string;
+  type: 'call';  // Changed from string to 'call' to match RecentItems.tsx
   title: string;
   subtitle?: string;
 };
