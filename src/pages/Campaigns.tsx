@@ -8,6 +8,7 @@ import { useCampaignData } from "@/hooks/useCampaignData";
 import { useCampaignStats } from "@/hooks/useCampaignStats";
 import { useLeadsData } from "@/hooks/useLeadsData";
 import { useLeadActions } from "@/hooks/useLeadActions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CampaignContent = () => {
   const { 
@@ -18,15 +19,25 @@ const CampaignContent = () => {
     setSearchQuery 
   } = useCampaignContext();
 
-  const { data: campaign, error: campaignError } = useCampaignData();
-  const { data: stats, error: statsError } = useCampaignStats();
-  const { data: leads, error: leadsError } = useLeadsData();
+  const { data: campaign, isLoading: campaignLoading, error: campaignError } = useCampaignData();
+  const { data: stats, isLoading: statsLoading, error: statsError } = useCampaignStats();
+  const { data: leads, isLoading: leadsLoading, error: leadsError } = useLeadsData();
   const { 
     handleCallNow, 
     handleScheduleFollowUp, 
     handleMarkCompleted, 
     handleUpdateStatus 
   } = useLeadActions();
+
+  if (campaignLoading || statsLoading || leadsLoading) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-60 w-full" />
+      </div>
+    );
+  }
 
   if (campaignError || statsError || leadsError) {
     return (
@@ -87,7 +98,9 @@ const CampaignContent = () => {
 const Campaigns = () => {
   return (
     <CampaignProvider>
-      <CampaignContent />
+      <div className="container mx-auto py-8">
+        <CampaignContent />
+      </div>
     </CampaignProvider>
   );
 };
