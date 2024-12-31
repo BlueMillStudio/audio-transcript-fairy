@@ -9,6 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Check, ListTodo, Loader2 } from "lucide-react";
 import { TaskReviewItem } from "./TaskReviewItem";
+import { Button } from "@/components/ui/button";
 import type { Task } from "@/types/task";
 
 interface CallActionDialogProps {
@@ -63,11 +64,17 @@ export function CallActionDialog({
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
+  const handleSave = async () => {
+    if (approvedTasks.length > 0) {
+      await onTaskApproval(approvedTasks);
+    }
+    onOpenChange(false);
+  };
+
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      if (tasks.length === 0 && approvedTasks.length > 0) {
-        onTaskApproval(approvedTasks);
-      }
+    // Only allow closing through the save button or explicit actions
+    if (!open && dialogState === "review") {
+      return;
     }
     if (open) {
       setDialogState("initial");
@@ -167,6 +174,13 @@ export function CallActionDialog({
                     <p className="text-sm text-green-800">{task.title}</p>
                   </div>
                 ))}
+              </div>
+            )}
+            {dialogState === "review" && (
+              <div className="flex justify-end mt-4 pt-4 border-t">
+                <Button onClick={handleSave} className="bg-green-500 hover:bg-green-600">
+                  Save Tasks
+                </Button>
               </div>
             )}
           </div>
