@@ -49,8 +49,8 @@ export function Sidebar({ className }: SidebarProps) {
                 key={route.href}
                 variant={route.active ? "secondary" : "ghost"}
                 className={cn(
-                  "w-full justify-start",
-                  route.active && "bg-muted font-medium"
+                  "w-full justify-start text-foreground hover:text-primary-foreground",
+                  route.active && "bg-muted font-medium text-foreground hover:text-primary-foreground"
                 )}
                 asChild
               >
