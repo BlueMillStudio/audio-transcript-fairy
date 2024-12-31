@@ -20,35 +20,49 @@ const Tasks = () => {
   const { data: tasks, refetch } = useTasks(filters, showArchived);
 
   const handleArchiveTask = async (taskId: string) => {
-    const { data: task } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("id", taskId)
-      .single();
+    try {
+      // First, get the task data
+      const { data: task } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("id", taskId)
+        .single();
 
-    if (task) {
-      const { error: archiveError } = await supabase
-        .from("archived_tasks")
-        .insert({
-          ...task,
-          original_task_id: task.id,
-          archived_at: new Date().toISOString(),
-        });
-
-      if (!archiveError) {
-        const { error: deleteError } = await supabase
+      if (task) {
+        // Update the task status to archived
+        const { error: updateError } = await supabase
           .from("tasks")
-          .delete()
+          .update({ status: "archived" })
           .eq("id", taskId);
 
-        if (!deleteError) {
-          toast({
-            title: "Task archived",
-            description: "The task has been moved to the archive.",
+        if (updateError) throw updateError;
+
+        // Insert into archived_tasks with a new UUID
+        const { error: archiveError } = await supabase
+          .from("archived_tasks")
+          .insert({
+            ...task,
+            id: undefined, // Let Supabase generate a new UUID
+            original_task_id: task.id,
+            archived_at: new Date().toISOString(),
           });
-          refetch();
-        }
+
+        if (archiveError) throw archiveError;
+
+        toast({
+          title: "Task archived",
+          description: "The task has been moved to the archive.",
+        });
+        
+        refetch();
       }
+    } catch (error) {
+      console.error("Error archiving task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to archive task. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
