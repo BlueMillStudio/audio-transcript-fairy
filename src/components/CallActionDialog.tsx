@@ -48,7 +48,8 @@ export function CallActionDialog({
         setDialogState("initial");
       }
     } else {
-      onAction(action);
+      await onAction(action);
+      onOpenChange(false);
     }
   };
 
@@ -70,10 +71,12 @@ export function CallActionDialog({
     if (approvedTasks.length > 0) {
       await onTaskApproval(approvedTasks);
     }
+    // Only close the dialog after tasks have been saved
     onOpenChange(false);
   };
 
   const handleOpenChange = (open: boolean) => {
+    // Only reset states when the dialog is being closed
     if (!open) {
       setDialogState("initial");
       setTasks([]);
@@ -88,7 +91,7 @@ export function CallActionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]" hideCloseButton={dialogState === "review"}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
             {dialogState === "initial"
