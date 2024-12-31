@@ -16,27 +16,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface Lead {
-  id: string;
-  name: string;
-  company: string;
-  phoneNumber: string;
-  lastContacted: Date | null;
-  status: 'not_contacted' | 'interested' | 'not_interested' | 'follow_up' | 'closed';
-  assignedAgent: string;
-  notes: string;
-}
+import type { DatabaseLead } from "@/types/database";
 
 interface LeadsTableProps {
-  leads: Lead[];
+  leads: DatabaseLead[];
   onCallNow: (leadId: string) => void;
   onScheduleFollowUp: (leadId: string) => void;
   onMarkCompleted: (leadId: string) => void;
-  onUpdateStatus: (leadId: string, status: Lead['status']) => void;
+  onUpdateStatus: (leadId: string, status: DatabaseLead['status']) => void;
 }
 
-const getStatusColor = (status: Lead['status']) => {
+const getStatusColor = (status: string) => {
   switch (status) {
     case 'interested':
       return 'bg-green-100 text-green-800';
@@ -51,7 +41,7 @@ const getStatusColor = (status: Lead['status']) => {
   }
 };
 
-const getStatusLabel = (status: Lead['status']) => {
+const getStatusLabel = (status: string) => {
   return status.split('_').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
@@ -74,7 +64,6 @@ export const LeadsTable = ({
             <TableHead>Phone Number</TableHead>
             <TableHead>Last Contacted</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Assigned Agent</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -83,18 +72,17 @@ export const LeadsTable = ({
             <TableRow key={lead.id}>
               <TableCell className="font-medium">{lead.name}</TableCell>
               <TableCell>{lead.company}</TableCell>
-              <TableCell>{lead.phoneNumber}</TableCell>
+              <TableCell>{lead.phone_number}</TableCell>
               <TableCell>
-                {lead.lastContacted
-                  ? format(new Date(lead.lastContacted), 'MMM d, yyyy')
+                {lead.last_contacted
+                  ? format(new Date(lead.last_contacted), 'MMM d, yyyy')
                   : 'Never'}
               </TableCell>
               <TableCell>
-                <Badge variant="secondary" className={getStatusColor(lead.status)}>
-                  {getStatusLabel(lead.status)}
+                <Badge variant="secondary" className={getStatusColor(lead.status || '')}>
+                  {getStatusLabel(lead.status || 'not_contacted')}
                 </Badge>
               </TableCell>
-              <TableCell>{lead.assignedAgent}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Button
