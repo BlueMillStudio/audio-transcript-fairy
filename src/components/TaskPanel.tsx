@@ -90,9 +90,7 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
       const { error } = await supabase
         .from('tasks')
         .update({ status: 'approved' })
-        .eq('id', taskId)
-        .select()
-        .single();
+        .eq('id', taskId);
 
       if (error) {
         toast({
@@ -116,9 +114,7 @@ export function TaskPanel({ open, onOpenChange, callId, taskId }: TaskPanelProps
       const { error } = await supabase
         .from('tasks')
         .update({ status: 'denied' })
-        .eq('id', taskId)
-        .select()
-        .single();
+        .eq('id', taskId);
 
       if (error) {
         toast({
