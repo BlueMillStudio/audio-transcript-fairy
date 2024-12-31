@@ -6,10 +6,10 @@ import { AudioUploader } from "@/components/AudioUploader";
 const Index = () => {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-gray-50">
         <AppSidebar />
-        <main className="flex-1 bg-gray-50">
-          <div className="container mx-auto py-8">
+        <main className="flex-1">
+          <div className="p-8">
             <div className="flex justify-between items-center mb-8">
               <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
               <AudioUploader />
