@@ -14,7 +14,7 @@ import { RecentItems } from "./sidebar/RecentItems";
 
 type RecentItem = {
   id: string;
-  type: 'call' | 'task';
+  type: 'call';
   title: string;
   subtitle?: string;
 };
@@ -44,19 +44,6 @@ export function AppSidebar() {
     enabled: !!currentCallId,
   });
 
-  const { data: callTasks } = useQuery({
-    queryKey: ["call-tasks", currentCallId],
-    queryFn: async () => {
-      if (!currentCallId) return null;
-      const { data } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("call_id", currentCallId);
-      return data;
-    },
-    enabled: !!currentCallId,
-  });
-
   useEffect(() => {
     if (activeCall) {
       const newItem: RecentItem = {
@@ -67,35 +54,19 @@ export function AppSidebar() {
       };
       
       setRecentItems(current => {
-        const filtered = current.filter(item => 
-          !(item.type === 'call' && item.id === activeCall.id)
-        );
+        const filtered = current.filter(item => item.id !== activeCall.id);
         return [newItem, ...filtered].slice(0, 5);
       });
     }
   }, [activeCall]);
 
   useEffect(() => {
-    if (callTasks?.length) {
-      const newTasks = callTasks.map(task => ({
-        id: task.id,
-        type: 'task' as const,
-        title: task.title,
-        subtitle: task.description,
-      }));
-      
-      setRecentItems(current => {
-        const filtered = current.filter(item => 
-          !(item.type === 'task' && callTasks.some(task => task.id === item.id))
-        );
-        return [...newTasks, ...filtered].slice(0, 5);
-      });
-    }
-  }, [callTasks]);
-
-  useEffect(() => {
     localStorage.setItem('recentItems', JSON.stringify(recentItems));
   }, [recentItems]);
+
+  const handleRemoveItem = (id: string) => {
+    setRecentItems(current => current.filter(item => item.id !== id));
+  };
 
   return (
     <Sidebar>
@@ -109,7 +80,7 @@ export function AppSidebar() {
         {recentItems.length > 0 && (
           <>
             <SidebarSeparator />
-            <RecentItems items={recentItems} />
+            <RecentItems items={recentItems} onRemoveItem={handleRemoveItem} />
           </>
         )}
       </SidebarContent>
