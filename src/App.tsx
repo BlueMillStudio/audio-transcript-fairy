@@ -10,6 +10,7 @@ import CallDetails from "./pages/CallDetails";
 import Campaigns from "./pages/Campaigns";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Contacts from "./pages/Contacts";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/call/:id" element={<CallDetails />} />
               <Route path="/campaigns" element={<Campaigns />} />
+              <Route path="/contacts" element={<Contacts />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
