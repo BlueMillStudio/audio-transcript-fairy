@@ -39,7 +39,7 @@ const getStatusColor = (status: string) => {
       return 'bg-purple-100 text-purple-800';
     case 'proposal':
       return 'bg-yellow-100 text-yellow-800';
-    case 'CLOSED_DEAL':
+    case 'closed':
       return 'bg-green-100 text-green-800';
     case 'bad_prospect':
       return 'bg-red-100 text-red-800';
@@ -155,7 +155,7 @@ export const LeadsTable = ({
                         Mark as Proposal
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => onUpdateStatus(lead.id, 'CLOSED_DEAL')}
+                        onClick={() => onUpdateStatus(lead.id, 'closed')}
                       >
                         Mark as Closed
                       </DropdownMenuItem>

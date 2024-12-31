@@ -100,7 +100,7 @@ export function AudioUploader({ onComplete, triggerComponent, leadId }: AudioUpl
         if (leadId) {
           const { error: updateError } = await supabase
             .from('leads')
-            .update({ status: 'CLOSED DEAL' })
+            .update({ status: 'closed' })
             .eq('id', leadId);
 
           if (updateError) throw updateError;
