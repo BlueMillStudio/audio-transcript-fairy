@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { PhoneCall, ListTodo, ChartBar, Target, FileText, Settings, Users } from "lucide-react"
+import { PhoneCall, ListTodo, ChartBar, Target, FileText, Settings, Users, Calendar } from "lucide-react"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -34,6 +34,12 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Users,
       href: "/contacts",
       active: location.pathname === "/contacts"
+    },
+    {
+      label: "Calendar",
+      icon: Calendar,
+      href: "/calendar",
+      active: location.pathname === "/calendar"
     },
     {
       label: "Reports",
