@@ -24,7 +24,7 @@ interface LeadsTableProps {
   onCallNow: (leadId: string) => void;
   onScheduleFollowUp: (leadId: string) => void;
   onMarkCompleted: (leadId: string) => void;
-  onUpdateStatus: (leadId: string, status: Lead['pipeline_status']) => void;
+  onUpdateStatus: (leadId: string, status: Lead['status']) => void;
 }
 
 const getStatusColor = (status: string) => {
@@ -44,7 +44,8 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusLabel = (status: string) => {
+const getStatusLabel = (status: string | null) => {
+  if (!status) return 'New';
   return status.split('_').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
@@ -84,9 +85,9 @@ export const LeadsTable = ({
               <TableCell>
                 <Badge 
                   variant="secondary" 
-                  className={getStatusColor(lead.pipeline_status)}
+                  className={getStatusColor(lead.status)}
                 >
-                  {getStatusLabel(lead.pipeline_status)}
+                  {getStatusLabel(lead.status)}
                 </Badge>
               </TableCell>
               <TableCell>
