@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { CallAnalysisDisplay } from "./CallAnalysisDisplay";
-import { scheduleMeeting } from "@/utils/meetingScheduler";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MeetingSuggestionDialogProps {
   open: boolean;
@@ -44,8 +43,20 @@ export function MeetingSuggestionDialog({
     try {
       const startTime = new Date(selectedDate);
       startTime.setHours(10, 0, 0, 0); // Default to 10 AM
+      const endTime = new Date(startTime);
+      endTime.setHours(11, 0, 0, 0); // 1-hour meeting
 
-      await scheduleMeeting(callId, startTime);
+      const { error } = await supabase
+        .from('calendar_events')
+        .insert({
+          title: 'Follow-up Meeting',
+          description: `Follow-up reason: ${analysis.suggestedFollowUp.reason}`,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          call_id: callId,
+        });
+
+      if (error) throw error;
 
       toast({
         title: "Meeting scheduled",
@@ -54,9 +65,10 @@ export function MeetingSuggestionDialog({
 
       onOpenChange(false);
     } catch (error) {
+      console.error('Error scheduling meeting:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to schedule meeting. Please try again.",
+        description: "Failed to schedule meeting. Please try again.",
         variant: "destructive",
       });
     }
@@ -73,7 +85,38 @@ export function MeetingSuggestionDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          <CallAnalysisDisplay analysis={analysis} />
+          {analysis.timeline && (
+            <div>
+              <h3 className="font-semibold mb-2">Call Timeline:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {analysis.timeline.map((event, index) => (
+                  <li key={index} className="text-sm text-gray-600">{event}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.reasons && (
+            <div>
+              <h3 className="font-semibold mb-2">What Went Wrong:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {analysis.reasons.map((reason, index) => (
+                  <li key={index} className="text-sm text-gray-600">{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.improvements && (
+            <div>
+              <h3 className="font-semibold mb-2">Tips for Improvement:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {analysis.improvements.map((tip, index) => (
+                  <li key={index} className="text-sm text-gray-600">{tip}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {analysis.suggestedFollowUp.shouldFollowUp && (
             <div className="space-y-4">
