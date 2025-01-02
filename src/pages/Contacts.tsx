@@ -6,27 +6,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mapDatabaseLeadToLead } from "@/types/campaign";
 import type { DatabaseLead } from "@/types/database";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const Contacts = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: contacts, isLoading, refetch } = useQuery({
-    queryKey: ['contacts'],
+    queryKey: ['contacts', searchQuery],
     queryFn: async () => {
-      const query = supabase
+      let query = supabase
         .from('leads')
         .select('*')
         .is('campaign_id', null)
         .order('created_at', { ascending: false });
 
       if (searchQuery) {
-        query.or(`name.ilike.%${searchQuery}%,company.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%,company.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       
-      // Map the database leads to the Lead type
       return (data as DatabaseLead[]).map(mapDatabaseLeadToLead);
     },
   });
@@ -46,6 +47,17 @@ const Contacts = () => {
         <h1 className="text-3xl font-bold">Contacts</h1>
         <AddContactDialog onContactAdded={() => refetch()} />
       </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search contacts..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       <ContactsTable contacts={contacts || []} />
     </div>
   );
