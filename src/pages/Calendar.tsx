@@ -8,7 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-type CalendarEvent = Tables<"calendar_events">;
+type CalendarEvent = Tables<"calendar_events"> & {
+  calls: {
+    client_name: string | null;
+    company_name: string | null;
+  } | null;
+};
 
 export default function CalendarPage() {
   const [date, setDate] = useState<Date>(new Date());
@@ -23,9 +28,7 @@ export default function CalendarPage() {
         .order("start_time", { ascending: true });
 
       if (eventsError) throw eventsError;
-      return eventsData as (CalendarEvent & {
-        calls: { client_name: string | null; company_name: string | null } | null;
-      })[];
+      return eventsData as CalendarEvent[];
     },
   });
 
