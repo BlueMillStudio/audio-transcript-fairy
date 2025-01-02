@@ -131,12 +131,14 @@ export function MeetingSuggestionDialog({
 
               <div>
                 <h3 className="font-semibold mb-2">Select Meeting Date:</h3>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className="rounded-md border"
-                />
+                <div className="flex justify-center w-full">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border w-full max-w-[400px]"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2">
