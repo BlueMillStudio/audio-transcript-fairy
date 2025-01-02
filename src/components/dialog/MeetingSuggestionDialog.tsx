@@ -46,38 +46,6 @@ export function MeetingSuggestionDialog({
       const endTime = new Date(startTime);
       endTime.setHours(11, 0, 0, 0); // 1-hour meeting
 
-      // First, get the call details to find the associated lead
-      const { data: callData } = await supabase
-        .from('calls')
-        .select('client_name, company_name')
-        .eq('id', callId)
-        .maybeSingle();
-
-      if (!callData) {
-        throw new Error('Call not found');
-      }
-
-      // Find the associated lead
-      const { data: leadData } = await supabase
-        .from('leads')
-        .select('id')
-        .eq('name', callData.client_name)
-        .eq('company', callData.company_name)
-        .maybeSingle();
-
-      if (!leadData) {
-        throw new Error('Could not find the associated lead. Please make sure the lead exists in the system.');
-      }
-
-      // Update lead status to 'meeting'
-      const { error: updateError } = await supabase
-        .from('leads')
-        .update({ status: 'meeting' })
-        .eq('id', leadData.id);
-
-      if (updateError) throw updateError;
-
-      // Create calendar event
       const { error } = await supabase
         .from('calendar_events')
         .insert({
@@ -100,7 +68,7 @@ export function MeetingSuggestionDialog({
       console.error('Error scheduling meeting:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to schedule meeting. Please try again.",
+        description: "Failed to schedule meeting. Please try again.",
         variant: "destructive",
       });
     }
