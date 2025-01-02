@@ -85,7 +85,6 @@ const Index = () => {
 
       <KanbanBoard />
 
-      {/* Upcoming Events Section */}
       <Card>
         <CardHeader>
           <CardTitle>Upcoming Events</CardTitle>
