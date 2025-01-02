@@ -3,6 +3,8 @@ import { CampaignStats } from "@/components/campaigns/CampaignStats";
 import { CampaignFilters } from "@/components/campaigns/CampaignFilters";
 import { SearchBar } from "@/components/campaigns/SearchBar";
 import { LeadsTable } from "@/components/campaigns/LeadsTable";
+import { KanbanBoard } from "@/components/KanbanBoard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignProvider, useCampaignContext } from "@/contexts/CampaignContext";
 import { useCampaignData } from "@/hooks/useCampaignData";
 import { useCampaignStats } from "@/hooks/useCampaignStats";
@@ -89,13 +91,26 @@ const CampaignContent = () => {
         onLeadAdded={refetchLeads} 
       />
 
-      <LeadsTable
-        leads={leads || []}
-        onCallNow={handleCallNow}
-        onScheduleFollowUp={handleScheduleFollowUp}
-        onMarkCompleted={handleMarkCompleted}
-        onUpdateStatus={handleUpdateStatus}
-      />
+      <Tabs defaultValue="table" className="w-full">
+        <TabsList>
+          <TabsTrigger value="table">Table View</TabsTrigger>
+          <TabsTrigger value="kanban">Kanban View</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="table">
+          <LeadsTable
+            leads={leads || []}
+            onCallNow={handleCallNow}
+            onScheduleFollowUp={handleScheduleFollowUp}
+            onMarkCompleted={handleMarkCompleted}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        </TabsContent>
+        
+        <TabsContent value="kanban">
+          <KanbanBoard />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
@@ -103,7 +118,7 @@ const CampaignContent = () => {
 const Campaigns = () => {
   return (
     <CampaignProvider>
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-8 px-4">
         <CampaignContent />
       </div>
     </CampaignProvider>
