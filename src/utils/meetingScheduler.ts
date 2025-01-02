@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 export async function scheduleMeeting(callId: string, startTime: Date) {
   try {
@@ -12,16 +11,20 @@ export async function scheduleMeeting(callId: string, startTime: Date) {
 
     if (callError) throw callError;
     if (!callData) {
-      throw new Error("Could not find the associated call details.");
+      throw new Error("Could not find the call details.");
     }
+
+    console.log('Call data found:', callData);
 
     // Find the lead based on the call data
     const { data: leadData, error: leadError } = await supabase
       .from('leads')
-      .select('id')
+      .select('id, campaign_id')
       .eq('name', callData.client_name)
       .eq('company', callData.company_name)
       .maybeSingle();
+
+    console.log('Lead query result:', leadData);
 
     if (leadError) throw leadError;
     if (!leadData) {
@@ -35,8 +38,8 @@ export async function scheduleMeeting(callId: string, startTime: Date) {
     const { error: calendarError } = await supabase
       .from('calendar_events')
       .insert({
-        title: 'Follow-up Meeting',
-        description: `Meeting with ${callData.client_name} from ${callData.company_name}`,
+        title: `Meeting with ${callData.client_name}`,
+        description: `Follow-up meeting with ${callData.client_name} from ${callData.company_name}`,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         call_id: callId,
@@ -47,14 +50,18 @@ export async function scheduleMeeting(callId: string, startTime: Date) {
     // Update lead status
     const { error: updateError } = await supabase
       .from('leads')
-      .update({ status: 'meeting' })
+      .update({ 
+        status: 'meeting',
+        last_contacted: new Date().toISOString()
+      })
       .eq('id', leadData.id);
 
     if (updateError) throw updateError;
 
+    console.log('Meeting scheduled successfully');
     return { success: true };
   } catch (error) {
-    console.error('Error scheduling meeting:', error);
+    console.error('Error in scheduleMeeting:', error);
     throw error;
   }
 }
