@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Lead } from "@/types/campaign";
+import { mapDatabaseLeadToLead } from "@/types/campaign";
 
 type CalendarEvent = Tables<"calendar_events"> & {
   calls: {
@@ -52,6 +54,30 @@ const Index = () => {
     },
   });
 
+  const { data: leads } = useQuery({
+    queryKey: ["leads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+      return data ? data.map(mapDatabaseLeadToLead) : [];
+    },
+  });
+
+  const handleUpdateStatus = async (leadId: string, status: Lead['status']) => {
+    const { error } = await supabase
+      .from('leads')
+      .update({ status })
+      .eq('id', leadId);
+
+    if (error) {
+      console.error('Error updating lead status:', error);
+    }
+  };
+
   const upcomingEvents = calendarEvents
     ?.filter(
       (event) =>
@@ -83,7 +109,10 @@ const Index = () => {
         ))}
       </div>
 
-      <KanbanBoard />
+      <KanbanBoard 
+        leads={leads || []} 
+        onUpdateStatus={handleUpdateStatus}
+      />
 
       <Card>
         <CardHeader>
