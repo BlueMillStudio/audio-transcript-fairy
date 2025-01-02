@@ -108,7 +108,10 @@ const CampaignContent = () => {
         </TabsContent>
         
         <TabsContent value="kanban">
-          <KanbanBoard />
+          <KanbanBoard 
+            leads={leads || []}
+            onUpdateStatus={handleUpdateStatus}
+          />
         </TabsContent>
       </Tabs>
     </div>

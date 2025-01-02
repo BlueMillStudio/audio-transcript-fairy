@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
 import type { Lead } from "@/types/campaign";
-import { mapDatabaseLeadToLead } from "@/types/campaign";
 
 const COLUMNS = [
   { id: 'new', title: 'New', color: 'bg-gray-100' },
@@ -14,35 +12,41 @@ const COLUMNS = [
   { id: 'closed', title: 'Closed', color: 'bg-green-100' },
 ];
 
-export function KanbanBoard() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+interface KanbanBoardProps {
+  leads: Lead[];
+  onUpdateStatus?: (leadId: string, status: Lead['status']) => void;
+}
 
-  useEffect(() => {
-    fetchLeads();
-  }, []);
-
-  const fetchLeads = async () => {
-    const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .order('updated_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching leads:', error);
-      return;
-    }
-
-    setLeads(data ? data.map(mapDatabaseLeadToLead) : []);
-  };
-
+export function KanbanBoard({ leads, onUpdateStatus }: KanbanBoardProps) {
   const getLeadsByStatus = (status: string) => {
     return leads.filter(lead => lead.status === status);
+  };
+
+  const handleDragStart = (e: React.DragEvent, leadId: string) => {
+    e.dataTransfer.setData('leadId', leadId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, status: string) => {
+    e.preventDefault();
+    const leadId = e.dataTransfer.getData('leadId');
+    if (onUpdateStatus) {
+      onUpdateStatus(leadId, status as Lead['status']);
+    }
   };
 
   return (
     <div className="grid grid-cols-5 gap-4 h-[500px]">
       {COLUMNS.map(column => (
-        <div key={column.id} className="flex flex-col h-full">
+        <div 
+          key={column.id} 
+          className="flex flex-col h-full"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, column.id)}
+        >
           <Card className="h-full flex flex-col">
             <CardHeader className={`${column.color} rounded-t-lg flex-shrink-0`}>
               <CardTitle className="text-sm font-medium">
@@ -56,7 +60,12 @@ export function KanbanBoard() {
               <ScrollArea className="h-[400px] w-full pr-4">
                 <div className="space-y-2">
                   {getLeadsByStatus(column.id).map(lead => (
-                    <Card key={lead.id} className="p-3">
+                    <Card 
+                      key={lead.id} 
+                      className="p-3 cursor-move hover:shadow-md transition-shadow"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, lead.id)}
+                    >
                       <div className="font-medium">{lead.name}</div>
                       <div className="text-sm text-muted-foreground">
                         {lead.company}
