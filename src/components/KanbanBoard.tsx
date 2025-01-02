@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import type { Lead } from "@/types/campaign";
 import { mapDatabaseLeadToLead } from "@/types/campaign";
@@ -39,11 +40,11 @@ export function KanbanBoard() {
   };
 
   return (
-    <div className="grid grid-cols-5 gap-4 h-[calc(100vh-12rem)] overflow-hidden">
+    <div className="grid grid-cols-5 gap-4 h-[500px]">
       {COLUMNS.map(column => (
         <div key={column.id} className="flex flex-col h-full">
-          <Card className="h-full">
-            <CardHeader className={`${column.color} rounded-t-lg`}>
+          <Card className="h-full flex flex-col">
+            <CardHeader className={`${column.color} rounded-t-lg flex-shrink-0`}>
               <CardTitle className="text-sm font-medium">
                 {column.title}
                 <Badge variant="secondary" className="ml-2">
@@ -51,17 +52,19 @@ export function KanbanBoard() {
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="overflow-y-auto h-full">
-              <div className="space-y-2">
-                {getLeadsByStatus(column.id as Lead['status']).map(lead => (
-                  <Card key={lead.id} className="p-3">
-                    <div className="font-medium">{lead.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {lead.company}
-                    </div>
-                  </Card>
-                ))}
-              </div>
+            <CardContent className="flex-1 p-3">
+              <ScrollArea className="h-[400px] w-full pr-4">
+                <div className="space-y-2">
+                  {getLeadsByStatus(column.id as Lead['status']).map(lead => (
+                    <Card key={lead.id} className="p-3">
+                      <div className="font-medium">{lead.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {lead.company}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
         </div>
