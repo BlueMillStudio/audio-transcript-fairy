@@ -35,8 +35,8 @@ export function KanbanBoard() {
     setLeads(data ? data.map(mapDatabaseLeadToLead) : []);
   };
 
-  const getLeadsByStatus = (status: Lead['status']) => {
-    return leads.filter(lead => lead.status === status);
+  const getLeadsByStatus = (pipeline_status: Lead['pipeline_status']) => {
+    return leads.filter(lead => lead.pipeline_status === pipeline_status);
   };
 
   return (
@@ -48,14 +48,14 @@ export function KanbanBoard() {
               <CardTitle className="text-sm font-medium">
                 {column.title}
                 <Badge variant="secondary" className="ml-2">
-                  {getLeadsByStatus(column.id as Lead['status']).length}
+                  {getLeadsByStatus(column.id as Lead['pipeline_status']).length}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 p-3">
               <ScrollArea className="h-[400px] w-full pr-4">
                 <div className="space-y-2">
-                  {getLeadsByStatus(column.id as Lead['status']).map(lead => (
+                  {getLeadsByStatus(column.id as Lead['pipeline_status']).map(lead => (
                     <Card key={lead.id} className="p-3">
                       <div className="font-medium">{lead.name}</div>
                       <div className="text-sm text-muted-foreground">

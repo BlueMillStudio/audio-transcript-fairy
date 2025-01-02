@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import type { Lead } from "@/types/campaign";
 
 export const useLeadActions = () => {
   const { toast } = useToast();
@@ -36,7 +37,7 @@ export const useLeadActions = () => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ status: 'follow_up' })
+        .update({ pipeline_status: 'talking' })
         .eq('id', leadId);
 
       if (error) throw error;
@@ -60,7 +61,10 @@ export const useLeadActions = () => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ status: 'CLOSED DEAL' })
+        .update({ 
+          pipeline_status: 'closed',
+          prospect_status: 'closed_deal'
+        })
         .eq('id', leadId);
 
       if (error) throw error;
@@ -80,11 +84,11 @@ export const useLeadActions = () => {
     }
   };
 
-  const handleUpdateStatus = async (leadId: string, status: string) => {
+  const handleUpdateStatus = async (leadId: string, pipeline_status: Lead['pipeline_status']) => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ status })
+        .update({ pipeline_status })
         .eq('id', leadId);
 
       if (error) throw error;

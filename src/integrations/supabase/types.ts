@@ -148,7 +148,8 @@ export type Database = {
           name: string
           notes: string | null
           phone_number: string | null
-          status: string | null
+          pipeline_status: string
+          prospect_status: string
           updated_at: string | null
         }
         Insert: {
@@ -161,7 +162,8 @@ export type Database = {
           name: string
           notes?: string | null
           phone_number?: string | null
-          status?: string | null
+          pipeline_status?: string
+          prospect_status?: string
           updated_at?: string | null
         }
         Update: {
@@ -174,7 +176,8 @@ export type Database = {
           name?: string
           notes?: string | null
           phone_number?: string | null
-          status?: string | null
+          pipeline_status?: string
+          prospect_status?: string
           updated_at?: string | null
         }
         Relationships: [
