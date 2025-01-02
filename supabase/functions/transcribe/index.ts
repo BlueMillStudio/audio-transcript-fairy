@@ -13,26 +13,45 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData()
-    const audioFile = formData.get('file')
+    console.log('Starting transcription process...')
     
+    // Validate request method
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`)
+    }
+
+    // Get and validate form data
+    let formData: FormData
+    try {
+      formData = await req.formData()
+    } catch (error) {
+      console.error('Error parsing form data:', error)
+      throw new Error('Invalid form data')
+    }
+
+    const audioFile = formData.get('file')
     if (!audioFile || !(audioFile instanceof File)) {
+      console.error('No valid audio file provided')
       throw new Error('No audio file provided')
     }
 
-    console.log('Preparing to call Groq API for transcription...')
+    console.log('Audio file received:', audioFile.name, 'Size:', audioFile.size)
 
-    // First, get the transcription
+    // Get API key
+    const groqApiKey = Deno.env.get('GROQ_API_KEY')
+    if (!groqApiKey) {
+      console.error('GROQ_API_KEY not found in environment')
+      throw new Error('API key configuration error')
+    }
+
+    // Prepare transcription request
+    console.log('Preparing transcription request...')
     const transcriptionFormData = new FormData()
     transcriptionFormData.append('file', audioFile)
     transcriptionFormData.append('model', 'whisper-large-v3-turbo')
     transcriptionFormData.append('response_format', 'json')
 
-    const groqApiKey = Deno.env.get('GROQ_API_KEY')
-    if (!groqApiKey) {
-      throw new Error('GROQ_API_KEY is not set in environment variables')
-    }
-
+    // Call Groq API for transcription
     console.log('Calling Groq API for transcription...')
     const transcriptionResponse = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
@@ -45,15 +64,13 @@ serve(async (req) => {
     if (!transcriptionResponse.ok) {
       const errorText = await transcriptionResponse.text()
       console.error('Groq API transcription error:', errorText)
-      throw new Error(`Groq API transcription error: ${errorText}`)
+      throw new Error(`Transcription failed: ${errorText}`)
     }
 
     const transcriptionData = await transcriptionResponse.json()
-    const transcription = transcriptionData.text
+    console.log('Transcription successful, analyzing with LLaMA...')
 
-    console.log('Successfully received transcription, now analyzing with LLaMA...')
-
-    // Now, analyze the transcription with LLaMA
+    // Analyze transcription with LLaMA
     const analysisResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -69,7 +86,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: transcription
+            content: transcriptionData.text
           }
         ],
         temperature: 0.1,
@@ -80,30 +97,38 @@ serve(async (req) => {
     if (!analysisResponse.ok) {
       const errorText = await analysisResponse.text()
       console.error('Groq API analysis error:', errorText)
-      throw new Error(`Groq API analysis error: ${errorText}`)
+      throw new Error(`Analysis failed: ${errorText}`)
     }
 
     const analysisData = await analysisResponse.json()
     const extractedInfo = JSON.parse(analysisData.choices[0].message.content)
     
-    // Calculate audio duration in seconds
-    const audioDuration = Math.round(audioFile.size / (16000 * 2)) // Approximate duration based on file size
+    // Calculate audio duration
+    const audioDuration = Math.round(audioFile.size / (16000 * 2))
 
-    // Combine all the information
+    // Prepare final response
     const result = {
-      text: transcription,
+      text: transcriptionData.text,
       ...extractedInfo,
       duration: audioDuration
     }
     
+    console.log('Processing completed successfully')
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
+
   } catch (error) {
-    console.error('Error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    console.error('Error in transcribe function:', error)
+    return new Response(
+      JSON.stringify({
+        error: error.message || 'An unexpected error occurred',
+        details: error.stack || 'No stack trace available'
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
   }
 })
