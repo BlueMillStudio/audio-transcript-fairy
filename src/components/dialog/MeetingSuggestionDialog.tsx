@@ -50,10 +50,17 @@ export function MeetingSuggestionDialog({
       const { data: callData, error: callError } = await supabase
         .from('calls')
         .select('client_name, company_name')
-        .eq('id', callId)
-        .single();
+        .maybeSingle();
 
       if (callError) throw callError;
+      if (!callData) {
+        toast({
+          title: "Error",
+          description: "Could not find the associated call details.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Find the lead based on the call data
       const { data: leadData, error: leadError } = await supabase
@@ -61,9 +68,17 @@ export function MeetingSuggestionDialog({
         .select('id')
         .eq('name', callData.client_name)
         .eq('company', callData.company_name)
-        .single();
+        .maybeSingle();
 
       if (leadError) throw leadError;
+      if (!leadData) {
+        toast({
+          title: "Error",
+          description: "Could not find the associated lead. Please make sure the lead exists in the system.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Create the calendar event
       const { error: calendarError } = await supabase
