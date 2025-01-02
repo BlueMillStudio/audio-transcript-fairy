@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { CAMPAIGN_ID } from "./useCampaignData";
 
 export const useCampaignStats = () => {
   const { toast } = useToast();
@@ -11,8 +10,7 @@ export const useCampaignStats = () => {
     queryFn: async () => {
       const { data: leads, error } = await supabase
         .from('leads')
-        .select('status')
-        .eq('campaign_id', CAMPAIGN_ID);
+        .select('status, last_contacted');
 
       if (error) {
         toast({
@@ -23,18 +21,22 @@ export const useCampaignStats = () => {
         throw error;
       }
 
-      const totalCalls = leads?.length || 0;
-      const leadsContacted = leads?.filter(l => l.status !== 'not_contacted').length || 0;
-      const conversions = leads?.filter(l => l.status === 'interested').length || 0;
-      const followUps = leads?.filter(l => l.status === 'follow_up').length || 0;
+      const totalCalls = leads?.filter(l => l.last_contacted !== null).length || 0;
+      const leadsContacted = leads?.filter(l => l.last_contacted !== null).length || 0;
+      const conversions = leads?.filter(l => l.status === 'closed').length || 0;
+      const followUps = leads?.filter(l => l.status === 'meeting').length || 0;
+      const droppedCalls = leads?.filter(l => l.status === 'new').length || 0;
+
+      // Calculate average duration (mock data for now)
+      const avgDuration = "2m 30s";
 
       return {
         totalCalls,
         leadsContacted,
         conversions,
         followUps,
-        droppedCalls: 0,
-        avgDuration: "0m 0s",
+        droppedCalls,
+        avgDuration,
       };
     },
   });

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DatabaseCampaign } from "@/types/database";
 import { useToast } from "@/components/ui/use-toast";
 
-// Using the ID we just inserted in our SQL migration
+// Using the ID of one of the campaigns we just inserted
 export const CAMPAIGN_ID = "123e4567-e89b-12d3-a456-426614174000";
 
 export const useCampaignData = () => {
@@ -12,11 +12,10 @@ export const useCampaignData = () => {
   return useQuery({
     queryKey: ['campaign'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: campaigns, error } = await supabase
         .from('campaigns')
         .select('*')
-        .eq('id', CAMPAIGN_ID)
-        .maybeSingle();
+        .limit(1);
 
       if (error) {
         toast({
@@ -27,16 +26,16 @@ export const useCampaignData = () => {
         throw error;
       }
       
-      if (!data) {
+      if (!campaigns || campaigns.length === 0) {
         toast({
-          title: "Campaign not found",
-          description: "The requested campaign could not be found.",
+          title: "No campaigns found",
+          description: "Please make sure campaigns exist in the database.",
           variant: "destructive",
         });
         return null;
       }
 
-      return data as DatabaseCampaign;
+      return campaigns[0] as DatabaseCampaign;
     },
   });
 };

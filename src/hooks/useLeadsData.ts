@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { DatabaseLead } from "@/types/database";
 import { mapDatabaseLeadToLead } from "@/types/campaign";
 import { useToast } from "@/components/ui/use-toast";
-import { CAMPAIGN_ID } from "./useCampaignData";
 import { useCampaignContext } from "@/contexts/CampaignContext";
 
 export const useLeadsData = () => {
@@ -15,8 +14,7 @@ export const useLeadsData = () => {
     queryFn: async () => {
       let query = supabase
         .from('leads')
-        .select('*')
-        .eq('campaign_id', CAMPAIGN_ID);
+        .select('*');
 
       if (filterStatus !== 'all') {
         query = query.eq('status', filterStatus);
