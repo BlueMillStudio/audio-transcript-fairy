@@ -91,7 +91,7 @@ export default function CalendarPage() {
                     <div className="relative w-full h-full flex items-center justify-center">
                       {date.getDate()}
                       {hasEventOnDay(date) && (
-                        <Circle className="h-1.5 w-1.5 absolute bottom-0 text-red-500" fill="currentColor" />
+                        <Circle className="h-1 w-1 absolute bottom-0 text-red-500" fill="currentColor" />
                       )}
                     </div>
                   ),
