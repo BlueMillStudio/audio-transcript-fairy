@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Circle } from "lucide-react";
+import { Calendar as CalendarIcon, Circle, Pill } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -17,13 +17,15 @@ export default function CalendarPage() {
   const { data: calendarEvents, isLoading } = useQuery({
     queryKey: ["calendar-events"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: eventsData, error: eventsError } = await supabase
         .from("calendar_events")
-        .select("*")
+        .select("*, calls(client_name, company_name)")
         .order("start_time", { ascending: true });
 
-      if (error) throw error;
-      return data as CalendarEvent[];
+      if (eventsError) throw eventsError;
+      return eventsData as (CalendarEvent & {
+        calls: { client_name: string | null; company_name: string | null } | null;
+      })[];
     },
   });
 
@@ -47,7 +49,6 @@ export default function CalendarPage() {
     )
     .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
 
-  // Function to check if a date has events
   const hasEventOnDay = (day: Date) => {
     return events.some(
       (event) =>
@@ -151,19 +152,35 @@ export default function CalendarPage() {
                 {upcomingEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="flex items-center space-x-4 rounded-lg border p-4"
+                    className="flex items-start space-x-4 rounded-lg border p-4"
                   >
-                    <CalendarIcon className="h-5 w-5 text-primary" />
-                    <div className="flex-1 space-y-1">
-                      <p className="font-medium">{event.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(event.start_time), "MMMM d, yyyy")} at{" "}
-                        {format(new Date(event.start_time), "h:mm a")}
-                      </p>
-                      {event.description && (
+                    <CalendarIcon className="h-5 w-5 text-primary mt-1" />
+                    <div className="flex-1 space-y-2">
+                      <div className="space-y-1">
+                        <p className="font-medium">{event.title}</p>
                         <p className="text-sm text-muted-foreground">
-                          {event.description}
+                          {format(new Date(event.start_time), "MMMM d, yyyy")} at{" "}
+                          {format(new Date(event.start_time), "h:mm a")}
                         </p>
+                        {event.description && (
+                          <p className="text-sm text-muted-foreground">
+                            {event.description}
+                          </p>
+                        )}
+                      </div>
+                      {event.calls && (
+                        <div className="flex items-center space-x-2">
+                          <Pill className="h-4 w-4 text-blue-500" />
+                          <span className="text-sm font-medium text-blue-500">
+                            {event.calls.client_name}
+                            {event.calls.company_name && (
+                              <span className="text-muted-foreground">
+                                {" "}
+                                • {event.calls.company_name}
+                              </span>
+                            )}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
