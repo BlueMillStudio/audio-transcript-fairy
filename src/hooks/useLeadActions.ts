@@ -37,7 +37,7 @@ export const useLeadActions = () => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ pipeline_status: 'talking' })
+        .update({ status: 'talking' })
         .eq('id', leadId);
 
       if (error) throw error;
@@ -61,10 +61,7 @@ export const useLeadActions = () => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ 
-          pipeline_status: 'closed',
-          prospect_status: 'closed_deal'
-        })
+        .update({ status: 'closed' })
         .eq('id', leadId);
 
       if (error) throw error;
@@ -84,11 +81,11 @@ export const useLeadActions = () => {
     }
   };
 
-  const handleUpdateStatus = async (leadId: string, pipeline_status: Lead['pipeline_status']) => {
+  const handleUpdateStatus = async (leadId: string, status: string) => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ pipeline_status })
+        .update({ status })
         .eq('id', leadId);
 
       if (error) throw error;
