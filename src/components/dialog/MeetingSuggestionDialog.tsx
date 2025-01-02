@@ -16,8 +16,9 @@ interface MeetingSuggestionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   analysis: {
-    reasons: string[];
-    improvements: string[];
+    timeline?: string[];
+    reasons?: string[];
+    improvements?: string[];
     suggestedFollowUp: {
       shouldFollowUp: boolean;
       timeframe: string;
@@ -84,23 +85,38 @@ export function MeetingSuggestionDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          <div>
-            <h3 className="font-semibold mb-2">What Went Wrong:</h3>
-            <ul className="list-disc pl-5 space-y-1">
-              {analysis.reasons.map((reason, index) => (
-                <li key={index} className="text-sm text-gray-600">{reason}</li>
-              ))}
-            </ul>
-          </div>
+          {analysis.timeline && (
+            <div>
+              <h3 className="font-semibold mb-2">Call Timeline:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {analysis.timeline.map((event, index) => (
+                  <li key={index} className="text-sm text-gray-600">{event}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          <div>
-            <h3 className="font-semibold mb-2">Tips for Improvement:</h3>
-            <ul className="list-disc pl-5 space-y-1">
-              {analysis.improvements.map((tip, index) => (
-                <li key={index} className="text-sm text-gray-600">{tip}</li>
-              ))}
-            </ul>
-          </div>
+          {analysis.reasons && (
+            <div>
+              <h3 className="font-semibold mb-2">What Went Wrong:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {analysis.reasons.map((reason, index) => (
+                  <li key={index} className="text-sm text-gray-600">{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.improvements && (
+            <div>
+              <h3 className="font-semibold mb-2">Tips for Improvement:</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                {analysis.improvements.map((tip, index) => (
+                  <li key={index} className="text-sm text-gray-600">{tip}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {analysis.suggestedFollowUp.shouldFollowUp && (
             <div className="space-y-4">

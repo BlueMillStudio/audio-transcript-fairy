@@ -32,14 +32,14 @@ export function ProspectDialog({
   const [callId, setCallId] = useState<string>("");
 
   const handleProspectSelection = async (type: 'good' | 'bad' | 'none') => {
-    if (type === 'bad') {
+    if (type === 'bad' || type === 'good') {
       try {
         // First, save the call data
         const { data: callData, error: dbError } = await supabase
           .from('calls')
           .insert({
             ...processedCallData,
-            prospect_type: 'bad',
+            prospect_type: type,
           })
           .select()
           .single();
@@ -51,15 +51,16 @@ export function ProspectDialog({
         if (leadId) {
           const { error: updateError } = await supabase
             .from('leads')
-            .update({ status: 'bad_prospect' })
+            .update({ status: type === 'good' ? 'good_prospect' : 'bad_prospect' })
             .eq('id', leadId);
 
           if (updateError) throw updateError;
         }
 
-        // Then, analyze the bad prospect
+        // Then, analyze the prospect based on type
+        const endpoint = type === 'good' ? 'analyze-good-prospect' : 'analyze-bad-prospect';
         const { data: analysisData, error: analysisError } = await supabase.functions
-          .invoke('analyze-bad-prospect', {
+          .invoke(endpoint, {
             body: { transcription: processedCallData.transcription },
           });
 
@@ -70,7 +71,7 @@ export function ProspectDialog({
 
         toast({
           title: "Status Updated",
-          description: "Lead marked as bad prospect",
+          description: `Lead marked as ${type} prospect`,
         });
       } catch (error) {
         console.error("Error updating status:", error);
