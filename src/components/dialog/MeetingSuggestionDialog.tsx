@@ -46,7 +46,27 @@ export function MeetingSuggestionDialog({
       const endTime = new Date(startTime);
       endTime.setHours(11, 0, 0, 0); // 1-hour meeting
 
-      const { error } = await supabase
+      // First, get the call details to find the associated lead
+      const { data: callData, error: callError } = await supabase
+        .from('calls')
+        .select('client_name, company_name')
+        .eq('id', callId)
+        .single();
+
+      if (callError) throw callError;
+
+      // Find the lead based on the call data
+      const { data: leadData, error: leadError } = await supabase
+        .from('leads')
+        .select('id')
+        .eq('name', callData.client_name)
+        .eq('company', callData.company_name)
+        .single();
+
+      if (leadError) throw leadError;
+
+      // Create the calendar event
+      const { error: calendarError } = await supabase
         .from('calendar_events')
         .insert({
           title: 'Follow-up Meeting',
@@ -56,7 +76,15 @@ export function MeetingSuggestionDialog({
           call_id: callId,
         });
 
-      if (error) throw error;
+      if (calendarError) throw calendarError;
+
+      // Update the lead's status to 'meeting'
+      const { error: updateError } = await supabase
+        .from('leads')
+        .update({ status: 'meeting' })
+        .eq('id', leadData.id);
+
+      if (updateError) throw updateError;
 
       toast({
         title: "Meeting scheduled",
