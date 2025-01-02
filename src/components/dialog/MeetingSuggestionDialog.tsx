@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { CallAnalysisDisplay } from "./CallAnalysisDisplay";
+import { scheduleMeeting } from "@/utils/meetingScheduler";
 
 interface MeetingSuggestionDialogProps {
   open: boolean;
@@ -43,63 +44,8 @@ export function MeetingSuggestionDialog({
     try {
       const startTime = new Date(selectedDate);
       startTime.setHours(10, 0, 0, 0); // Default to 10 AM
-      const endTime = new Date(startTime);
-      endTime.setHours(11, 0, 0, 0); // 1-hour meeting
 
-      // First, get the call details to find the associated lead
-      const { data: callData, error: callError } = await supabase
-        .from('calls')
-        .select('client_name, company_name')
-        .maybeSingle();
-
-      if (callError) throw callError;
-      if (!callData) {
-        toast({
-          title: "Error",
-          description: "Could not find the associated call details.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Find the lead based on the call data
-      const { data: leadData, error: leadError } = await supabase
-        .from('leads')
-        .select('id')
-        .eq('name', callData.client_name)
-        .eq('company', callData.company_name)
-        .maybeSingle();
-
-      if (leadError) throw leadError;
-      if (!leadData) {
-        toast({
-          title: "Error",
-          description: "Could not find the associated lead. Please make sure the lead exists in the system.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Create the calendar event
-      const { error: calendarError } = await supabase
-        .from('calendar_events')
-        .insert({
-          title: 'Follow-up Meeting',
-          description: `Follow-up reason: ${analysis.suggestedFollowUp.reason}`,
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString(),
-          call_id: callId,
-        });
-
-      if (calendarError) throw calendarError;
-
-      // Update the lead's status to 'meeting'
-      const { error: updateError } = await supabase
-        .from('leads')
-        .update({ status: 'meeting' })
-        .eq('id', leadData.id);
-
-      if (updateError) throw updateError;
+      await scheduleMeeting(callId, startTime);
 
       toast({
         title: "Meeting scheduled",
@@ -108,10 +54,9 @@ export function MeetingSuggestionDialog({
 
       onOpenChange(false);
     } catch (error) {
-      console.error('Error scheduling meeting:', error);
       toast({
         title: "Error",
-        description: "Failed to schedule meeting. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to schedule meeting. Please try again.",
         variant: "destructive",
       });
     }
@@ -128,38 +73,7 @@ export function MeetingSuggestionDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {analysis.timeline && (
-            <div>
-              <h3 className="font-semibold mb-2">Call Timeline:</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                {analysis.timeline.map((event, index) => (
-                  <li key={index} className="text-sm text-gray-600">{event}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {analysis.reasons && (
-            <div>
-              <h3 className="font-semibold mb-2">What Went Wrong:</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                {analysis.reasons.map((reason, index) => (
-                  <li key={index} className="text-sm text-gray-600">{reason}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {analysis.improvements && (
-            <div>
-              <h3 className="font-semibold mb-2">Tips for Improvement:</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                {analysis.improvements.map((tip, index) => (
-                  <li key={index} className="text-sm text-gray-600">{tip}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <CallAnalysisDisplay analysis={analysis} />
 
           {analysis.suggestedFollowUp.shouldFollowUp && (
             <div className="space-y-4">
